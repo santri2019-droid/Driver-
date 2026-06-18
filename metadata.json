@@ -1,0 +1,6 @@
+{
+  "name": "Driver Cash",
+  "description": "Una aplicación financiera de alta precisión para conductores profesionales. Permite registrar ingresos diarios, calcular costos operativos reales (combustible, seguro, depreciación) y monitorear el margen neto acumulado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
