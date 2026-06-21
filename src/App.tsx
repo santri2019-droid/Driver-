@@ -6,10 +6,12 @@ import AdvancesTab from "./components/AdvancesTab";
 import JournalTab from "./components/JournalTab";
 import GoalsTab from "./components/GoalsTab";
 import AchievementsTab from "./components/AchievementsTab";
+import DashboardTab from "./components/DashboardTab";
+import SettingsTab from "./components/SettingsTab";
 
 import { 
-  INITIAL_LOGS, 
-  INITIAL_GOALS_CONFIG, 
+  initialLogs, 
+  defaultGoals, 
   INITIAL_ADVANCES, 
   INITIAL_ACHIEVEMENTS 
 } from "./data";
@@ -30,7 +32,10 @@ export default function App() {
     return localStorage.getItem("dc_avatarUrl") || "https://lh3.googleusercontent.com/aida-public/AB6AXuBcL-6O-RUAJQq_YWM3Hg01FEEAFziwCNorVtfdNXYKTNgI0Jrc0vGZVE8sbvEWUtUiK4VyPnUY2ItlesODy6eev2S4pPNJoR8Sq55BaZ7_e1OYQAE2c96PlvFdR5dBpjyTTo5YocSSYibDbYg89HuPCJMeK6wGyd9yP0EiMeNTKP0ZNcmYO5FcYrCxxKaEgMZzj3RmVE8HXSvZMHCyrA7qNK_C-7L2FrAuL-oSdtKCtSPn0WZCZKe2_souEyEE0KN0wdrlQ3PVOQ";
   });
   const [currencySymbol, setCurrencySymbol] = useState<string>(() => {
-    return localStorage.getItem("dc_currencySymbol") || "$";
+    return localStorage.getItem("dc_currencySymbol") || "$(ARS)";
+  });
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem("dc_darkMode") !== "false";
   });
   const [unreadNotifications, setUnreadNotifications] = useState<number>(2);
 
@@ -39,12 +44,17 @@ export default function App() {
     try {
       const saved = localStorage.getItem("dc_logs");
       if (saved && saved !== "undefined") {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Map old logs to new schema
+        return parsed.map((log: any) => ({
+          ...log,
+          kilometers: log.kilometers ?? 0,
+        }));
       }
     } catch (e) {
       console.error("Error parsing dc_logs:", e);
     }
-    return INITIAL_LOGS;
+    return initialLogs;
   });
 
   // Core goals state with LocalStorage persistence and safe parsing
@@ -52,12 +62,18 @@ export default function App() {
     try {
       const saved = localStorage.getItem("dc_goals");
       if (saved && saved !== "undefined") {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultGoals,
+          ...parsed,
+          workingDaysPerMonth: parsed.workingDaysPerMonth ?? (parsed.workingDaysPerWeek ? parsed.workingDaysPerWeek * 4 : defaultGoals.workingDaysPerMonth),
+          customFixedExpenses: parsed.customFixedExpenses || defaultGoals.customFixedExpenses,
+        };
       }
     } catch (e) {
       console.error("Error parsing dc_goals:", e);
     }
-    return INITIAL_GOALS_CONFIG;
+    return defaultGoals;
   });
 
   // Early withdrawals / advances state with LocalStorage persistence and safe parsing
@@ -100,6 +116,17 @@ export default function App() {
   }, [currencySymbol]);
 
   useEffect(() => {
+    localStorage.setItem("dc_darkMode", isDarkMode ? "true" : "false");
+    if (isDarkMode) {
+      document.documentElement.classList.remove("light");
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
     localStorage.setItem("dc_logs", JSON.stringify(logs));
   }, [logs]);
 
@@ -133,6 +160,19 @@ export default function App() {
       if (interval) clearInterval(interval);
     };
   }, [isShiftActive]);
+
+  const handleResetAllData = () => {
+    localStorage.clear();
+    setLogs(initialLogs);
+    setGoals(defaultGoals);
+    setAdvances(INITIAL_ADVANCES);
+    setDriverName("Carlos Martínez");
+    setCarModel("Chevrolet Prisma 1.4");
+    setCurrencySymbol("$(ARS)");
+    setShiftSeconds(0);
+    setIsShiftActive(false);
+    setIsDarkMode(true);
+  };
 
   // Sidebar shortcut action trigger
   const handleRequestQuickCashOut = () => {
@@ -219,6 +259,22 @@ export default function App() {
               goals={goals}
               achievements={INITIAL_ACHIEVEMENTS}
               currencySymbol={currencySymbol}
+            />
+          )}
+
+          {selectedTab === "dashboard" && (
+            <DashboardTab
+              logs={logs}
+              goals={goals}
+              currencySymbol={currencySymbol}
+            />
+          )}
+
+          {selectedTab === "settings" && (
+            <SettingsTab
+              onResetAllData={handleResetAllData}
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
             />
           )}
         </main>

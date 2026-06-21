@@ -29,35 +29,35 @@ export default function JournalTab({
   const [selectedDayObj, setSelectedDayObj] = useState(initialDays[5]); // SAB 17 as default corresponding to today
   
   // Input fields state
-  const [grossStr, setGrossStr] = useState("120.00");
+  const [incomesState, setIncomesState] = useState<{ id: string; source: string; amount: number }[]>([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 120 }]);
   const [fuelStr, setFuelStr] = useState("30.00");
   const [maintStr, setMaintStr] = useState("10.00");
-  const [reserveStr, setReserveStr] = useState("5.00");
+  const [otherStr, setOtherStr] = useState("0.00");
 
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; error: boolean } | null>(null);
 
   // Parse strings to float safely
-  const grossNum = parseFloat(grossStr) || 0;
+  const grossNum = incomesState.reduce((acc, curr) => acc + curr.amount, 0);
   const fuelNum = parseFloat(fuelStr) || 0;
   const maintNum = parseFloat(maintStr) || 0;
-  const reserveNum = parseFloat(reserveStr) || 0;
-  const calculatedNet = Math.max(-1000, grossNum - fuelNum - maintNum - reserveNum);
+  const otherNum = parseFloat(otherStr) || 0;
+  const calculatedNet = grossNum - fuelNum - maintNum - otherNum;
 
   // When selected day shifts, check if a log already exists for it, and prepopulate values!
   // This turns the journal into an elegant interactive editor.
   useEffect(() => {
     const existingLog = logs.find(l => l.date === selectedDayObj.dateStr);
     if (existingLog) {
-      setGrossStr(existingLog.grossIncome.toString());
+      setIncomesState(existingLog.incomes || [{ id: 'inc-'+Date.now(), source: 'Uber', amount: existingLog.grossIncome }]);
       setFuelStr(existingLog.fuelExpense.toString());
       setMaintStr(existingLog.maintenanceExpense.toString());
-      setReserveStr(existingLog.reserveExpense.toString());
+      setOtherStr(existingLog.otherExpense ? existingLog.otherExpense.toString() : '0');
     } else {
       // Default recommended values based on goals setup or empty fields
-      setGrossStr("");
+      setIncomesState([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 0 }]);
       setFuelStr("");
       setMaintStr("");
-      setReserveStr(goals.reserveFundMonthly ? (goals.reserveFundMonthly / 30).toFixed(2) : "5.00");
+      setOtherStr("0");
     }
     setFeedbackMsg(null);
   }, [selectedDayObj, logs, goals]);
@@ -66,7 +66,7 @@ export default function JournalTab({
   const handleSaveLogs = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!grossStr && !fuelStr && !maintStr) {
+    if (incomesState.length === 0 && !fuelStr && !maintStr) {
       setFeedbackMsg({ text: "Introduce al menos un valor de ingresos o gastos.", error: true });
       return;
     }
@@ -77,9 +77,11 @@ export default function JournalTab({
       dayOfWeek: selectedDayObj.key,
       dayLabel: `${selectedDayObj.label} ${selectedDayObj.num}`,
       grossIncome: grossNum,
+      incomes: incomesState,
       fuelExpense: fuelNum,
       maintenanceExpense: maintNum,
-      reserveExpense: reserveNum,
+      otherExpense: otherNum,
+      kilometers: 0,
       netIncome: calculatedNet,
     };
 
@@ -99,10 +101,10 @@ export default function JournalTab({
 
   // Quick action: preload defaults
   const handlePreloadDefaults = () => {
-    setGrossStr("140.00");
+    setIncomesState([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 140 }]);
     setFuelStr("35.00");
     setMaintStr("12.00");
-    setReserveStr((goals.reserveFundMonthly / 30).toFixed(2));
+    setOtherStr("0");
   };
 
   // Delete log item
@@ -114,7 +116,7 @@ export default function JournalTab({
     <div className="space-y-6">
       {/* Title & Introduction */}
       <section className="space-y-1.5">
-        <h2 className="text-xl md:text-2xl font-black text-white">Carga Diaria</h2>
+        <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Carga Diaria</h2>
         <p className="text-xs text-brand-on-surface-variant">
           Registra tu actividad de conducción para mantener tus métricas presupuestarias y netas al segundo.
         </p>
@@ -135,7 +137,7 @@ export default function JournalTab({
                 className={`flex flex-col items-center justify-center p-2 rounded-xl min-w-[50px] transition-all cursor-pointer relative ${
                   isSelected 
                     ? "bg-brand-primary text-black font-extrabold scaling" 
-                    : "bg-brand-container hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-white"
+                    : "bg-brand-container hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-brand-on-surface"
                 }`}
               >
                 <span className="text-[10px] uppercase font-bold tracking-wider">{day.label}</span>
@@ -158,7 +160,7 @@ export default function JournalTab({
         {/* Dynamic header showing existing status */}
         <div className="flex justify-between items-center border-b border-brand-border/60 pb-3">
           <span className="text-xs text-brand-on-surface-variant font-semibold">
-            Modificando día: <strong className="text-white font-black">{selectedDayObj.label} {selectedDayObj.num} de Junio</strong>
+            Modificando día: <strong className="text-brand-on-surface font-black">{selectedDayObj.label} {selectedDayObj.num} de Junio</strong>
           </span>
           <button
             onClick={handlePreloadDefaults}
@@ -172,29 +174,59 @@ export default function JournalTab({
 
         {/* Section: Ingresos */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-            <Coins className="w-4 h-4 text-brand-primary" />
-            Ingresos Habituales
-          </h3>
-          <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-brand-on-surface-variant block uppercase tracking-wide">
-              Facturación Bruta Automática (Pasajes / Entregas)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-2.5 text-xs font-bold text-brand-primary">
-                {currencySymbol}
-              </span>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={grossStr}
-                onChange={(e) => setGrossStr(e.target.value)}
-                placeholder="0.00"
-                className="w-full bg-brand-bg-darker text-white text-sm font-semibold rounded-lg pl-8 pr-4 py-2 file:border-0 border border-brand-border focus:outline-none focus:border-brand-primary transition-colors"
-              />
-            </div>
+          <div className="flex justify-between items-center">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-brand-on-surface flex items-center gap-1.5">
+              <Coins className="w-4 h-4 text-brand-primary" />
+              Ingresos por Plataforma
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIncomesState([...incomesState, { id: 'inc-'+Date.now(), source: 'Nueva App', amount: 0 }])}
+              className="text-xs text-brand-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-3 h-3" />
+              Agregar
+            </button>
           </div>
+          {incomesState.map((inc, i) => (
+            <div key={inc.id} className="flex gap-2 items-center">
+              <select
+                value={inc.source}
+                onChange={e => {
+                  const updated = [...incomesState];
+                  updated[i].source = e.target.value;
+                  setIncomesState(updated);
+                }}
+                className="w-1/2 bg-brand-bg border border-brand-border rounded-lg px-2 py-2 text-xs text-brand-on-surface"
+              >
+                <option value="Uber">Uber</option>
+                <option value="Didi">Didi</option>
+                <option value="Cabify">Cabify</option>
+                <option value="Pedidos Ya">Pedidos Ya</option>
+                <option value="Rappi">Rappi</option>
+                <option value="Mercado Envíos">Mercado Envíos</option>
+                <option value="Nueva App">Otra</option>
+              </select>
+              <div className="relative w-1/2">
+                <span className="absolute left-2 top-2 text-xs font-bold text-brand-primary">{currencySymbol}</span>
+                <input
+                  type="number"
+                  value={inc.amount}
+                  onChange={e => {
+                    const updated = [...incomesState];
+                    updated[i].amount = parseFloat(e.target.value) || 0;
+                    setIncomesState(updated);
+                  }}
+                  className="w-full bg-brand-bg-darker text-brand-on-surface text-sm rounded-lg pl-6 pr-2 py-2 border border-brand-border focus:border-brand-primary outline-none"
+                />
+              </div>
+              <button type="button" onClick={() => {
+                const updated = [...incomesState];
+                updated.splice(i, 1);
+                setIncomesState(updated);
+              }} className="text-brand-error p-2 cursor-pointer"><Trash2 className="w-4 h-4"/></button>
+            </div>
+          ))}
         </div>
 
         {/* Section: Egresos Operativos */}
@@ -219,7 +251,7 @@ export default function JournalTab({
                   value={fuelStr}
                   onChange={(e) => setFuelStr(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-brand-bg-darker text-white text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
+                  className="w-full bg-brand-bg-darker text-brand-on-surface text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
                 />
               </div>
             </div>
@@ -238,15 +270,15 @@ export default function JournalTab({
                   value={maintStr}
                   onChange={(e) => setMaintStr(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-brand-bg-darker text-white text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
+                  className="w-full bg-brand-bg-darker text-brand-on-surface text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
                 />
               </div>
             </div>
 
-            {/* Fondo de amortizacion */}
+            {/* Otro */}
             <div className="space-y-1">
               <label className="text-[10px] font-semibold text-brand-on-surface-variant block uppercase tracking-wider">
-                Fondo de Reserva
+                Otro (Día)
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-xs font-bold text-brand-on-surface-variant">{currencySymbol}</span>
@@ -254,10 +286,10 @@ export default function JournalTab({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={reserveStr}
-                  onChange={(e) => setReserveStr(e.target.value)}
+                  value={otherStr}
+                  onChange={(e) => setOtherStr(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-brand-bg-darker text-white text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
+                  className="w-full bg-brand-bg-darker text-brand-on-surface text-xs rounded-lg pl-7 pr-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
                 />
               </div>
             </div>
@@ -299,7 +331,7 @@ export default function JournalTab({
       {/* Historically Logged entries checklist */}
       <section id="historical-logs-section" className="space-y-3">
         <h3 className="text-xs font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-          Registros Realizados ({logs.length})
+          Registros del mes ({logs.length})
         </h3>
         
         {logs.length === 0 ? (
@@ -315,18 +347,18 @@ export default function JournalTab({
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-white">{log.dayLabel} de Junio</span>
+                    <span className="text-xs font-black text-brand-on-surface">{log.dayLabel} de Junio</span>
                     <span className="text-[9px] text-brand-on-surface-variant font-mono">{log.date}</span>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[10px] text-brand-on-surface-variant font-mono">
-                    <span>Bruto: <strong className="text-white">{currencySymbol}{log.grossIncome}</strong></span>
+                    <span>Bruto: <strong className="text-brand-on-surface">{currencySymbol}{log.grossIncome}</strong></span>
                     <span>•</span>
                     <span>Nafta: <strong className="text-brand-error/90">{currencySymbol}{log.fuelExpense}</strong></span>
                     <span>•</span>
                     <span>Reparos: <strong className="text-brand-error/90">{currencySymbol}{log.maintenanceExpense}</strong></span>
                     <span>•</span>
-                    <span>Reserva: <strong className="text-brand-tertiary">{currencySymbol}{log.reserveExpense}</strong></span>
+                    <span>Kms: <strong className="text-brand-tertiary">0</strong></span>
                   </div>
                 </div>
 

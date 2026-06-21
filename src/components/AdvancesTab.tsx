@@ -106,7 +106,7 @@ export default function AdvancesTab({
     <div className="space-y-6">
       {/* Tab intro header */}
       <section className="space-y-1.5">
-        <h2 className="text-xl md:text-2xl font-black text-white">Adelanto Líquido (Advances)</h2>
+        <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Adelanto Líquido (Advances)</h2>
         <p className="text-xs text-brand-on-surface-variant">
           Evita esperar al cierre bancario. Retira hasta el 85% de tu margen neto real de forma inmediata.
         </p>
@@ -137,7 +137,7 @@ export default function AdvancesTab({
       {/* Interactive withdraw form */}
       <section className="bg-brand-container border border-brand-border rounded-xl p-5 shadow-md">
         <form onSubmit={handleCreateAdvance} className="space-y-4">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5 border-b border-brand-border/40 pb-2">
+          <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface flex items-center gap-1.5 border-b border-brand-border/40 pb-2">
             <ArrowRightLeft className="w-4 h-4 text-brand-primary" />
             Configurar Retiro de Fondos
           </h3>
@@ -158,7 +158,7 @@ export default function AdvancesTab({
                   setAdvanceAmountStr(e.target.value);
                   setValidationError(null);
                 }}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-white font-semibold focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface font-semibold focus:outline-none focus:border-brand-primary"
                 placeholder="100.00"
               />
             </div>
@@ -171,10 +171,10 @@ export default function AdvancesTab({
               <select
                 value={selectedDest}
                 onChange={(e) => setSelectedDest(e.target.value)}
-                className="w-full bg-brand-bg text-xs border border-brand-border rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-primary cursor-pointer"
+                className="w-full bg-brand-bg text-xs border border-brand-border rounded-lg px-3 py-2 text-brand-on-surface focus:outline-none focus:border-brand-primary cursor-pointer"
               >
                 {destinations.map((dest, i) => (
-                  <option key={i} value={dest} className="bg-brand-container text-white">
+                  <option key={i} value={dest} className="bg-brand-container text-brand-on-surface">
                     {dest}
                   </option>
                 ))}
@@ -186,9 +186,9 @@ export default function AdvancesTab({
           <div className="bg-brand-bg-darker/60 rounded-xl p-3 border border-brand-border/40 space-y-1.5 text-xs">
             <div className="flex justify-between items-center text-brand-on-surface-variant">
               <span>Sustracción por Prorrateo e IVA (2%)</span>
-              <span className="font-mono text-white">{currencySymbol}{calculatedFee.toFixed(2)}</span>
+              <span className="font-mono text-brand-on-surface">{currencySymbol}{calculatedFee.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center text-white font-bold text-sm border-t border-brand-border/30 pt-1.5">
+            <div className="flex justify-between items-center text-brand-on-surface font-bold text-sm border-t border-brand-border/30 pt-1.5">
               <span>Disembolso Neto Estimado</span>
               <span className="font-mono text-brand-primary">{currencySymbol}{netDisbursement.toFixed(2)}</span>
             </div>
@@ -250,21 +250,21 @@ export default function AdvancesTab({
               const badgeColors = {
                 PENDIENTE: "bg-brand-tertiary/10 text-brand-tertiary border-brand-tertiary/20",
                 APROBADO: "bg-brand-primary/10 text-brand-primary border-brand-primary/20 animate-pulse",
-                COMPLETADO: "bg-brand-primary-container/15 text-white border-brand-primary-container/20",
+                COMPLETADO: "bg-brand-primary-container/15 text-brand-on-surface border-brand-primary-container/20",
               };
               
               return (
                 <div key={adv.id} className="bg-brand-container border border-brand-border/60 p-3.5 rounded-xl flex items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white font-mono">{adv.destination}</span>
+                      <span className="text-xs font-bold text-brand-on-surface font-mono">{adv.destination}</span>
                       <span className={`text-[8.5px] px-2 py-0.5 rounded border ${badgeColors[adv.status]}`}>
                         {adv.status}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-4 text-[10px] text-brand-on-surface-variant font-mono">
-                      <span>Ref ID: <strong className="text-white">{adv.id}</strong></span>
+                      <span>Ref ID: <strong className="text-brand-on-surface">{adv.id}</strong></span>
                       <span>•</span>
                       <span>Fecha: {adv.date}</span>
                     </div>
@@ -273,7 +273,7 @@ export default function AdvancesTab({
                   <div className="flex items-center gap-2.5">
                     <div className="text-right">
                       <span className="text-[10px] text-brand-on-surface-variant font-bold block">Desembolso</span>
-                      <strong className="text-white font-mono text-sm">{currencySymbol}{(adv.amount - adv.fee).toFixed(2)}</strong>
+                      <strong className="text-brand-on-surface font-mono text-sm">{currencySymbol}{(adv.amount - adv.fee).toFixed(2)}</strong>
                     </div>
 
                     <button

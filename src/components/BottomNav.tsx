@@ -1,4 +1,4 @@
-import { Home, Landmark, BookOpen, Target, Award, DollarSign } from "lucide-react";
+import { Home, Landmark, BookOpen, Target, Award, DollarSign, LayoutDashboard, Settings } from "lucide-react";
 
 interface BottomNavProps {
   selectedTab: string;
@@ -13,11 +13,13 @@ export default function BottomNav({
 }: BottomNavProps) {
   
   const navItems = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "advances", label: "Advances", icon: Landmark },
-    { id: "journal", label: "Journal", icon: BookOpen },
-    { id: "goals", label: "Goals", icon: Target },
-    { id: "achievements", label: "Achievements", icon: Award },
+    { id: "home", label: "Hogar", icon: Home },
+    { id: "advances", label: "Adelantos", icon: Landmark },
+    { id: "journal", label: "Diario", icon: BookOpen },
+    { id: "goals", label: "Objetivos", icon: Target },
+    { id: "achievements", label: "Logros", icon: Award },
+    { id: "dashboard", label: "Panel", icon: LayoutDashboard },
+    { id: "settings", label: "Ajustes", icon: Settings },
   ];
 
   return (
@@ -37,7 +39,7 @@ export default function BottomNav({
               className={`flex flex-col items-center justify-center p-1.5 w-16 h-12 rounded-xl transition-all active:scale-90 duration-200 cursor-pointer ${
                 isActive 
                   ? "bg-brand-primary-container text-black font-semibold" 
-                  : "text-brand-on-surface-variant hover:text-white"
+                  : "text-brand-on-surface-variant hover:text-brand-on-surface"
               }`}
             >
               <Icon className="w-5 h-5 shrink-0" />
@@ -70,7 +72,7 @@ export default function BottomNav({
                 className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                   isActive
                     ? "bg-brand-primary text-black"
-                    : "text-brand-on-surface hover:bg-brand-container-highest/50 hover:text-white"
+                    : "text-brand-on-surface hover:bg-brand-container-highest/50 hover:text-brand-on-surface"
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? "text-black" : "text-brand-primary"}`} />

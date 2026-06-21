@@ -80,14 +80,14 @@ export default function Header({
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Settings className="w-3 h-3 text-white" />
+                <Settings className="w-3 h-3 text-brand-on-surface" />
               </div>
             </button>
             
             <div className="flex flex-col">
-              <h1 className="font-extrabold text-lg md:text-xl tracking-tight text-white flex items-center gap-1.5">
-                <span className="text-brand-primary">Driver</span>
-                <span className="text-white">Cash</span>
+              <h1 className="font-extrabold text-lg md:text-xl tracking-tight text-brand-on-surface flex items-center gap-1.5">
+                <span className="text-brand-primary">DRIVER</span>
+                <span className="text-brand-on-surface">CASH</span>
               </h1>
               <span className="text-[10px] text-brand-on-surface-variant uppercase tracking-wider font-semibold -mt-1 hidden sm:inline-block">
                 Socio Profesional • {carModel}
@@ -100,7 +100,7 @@ export default function Header({
             <div className="hidden md:flex items-center gap-4 bg-brand-container/40 px-3 py-1 rounded-lg border border-brand-border/40 text-xs">
               <div>
                 <span className="text-brand-on-surface-variant block text-[9px] uppercase tracking-wide">Chofer</span>
-                <span className="font-bold text-white text-right">{driverName}</span>
+                <span className="font-bold text-brand-on-surface text-right">{driverName}</span>
               </div>
               <div className="h-6 w-[1px] bg-brand-border"></div>
               <div>
@@ -116,7 +116,7 @@ export default function Header({
                 setNotificationsOpen(true);
                 setUnreadNotifications(0);
               }}
-              className="relative p-2.5 rounded-xl hover:bg-brand-container-highest/50 active:scale-95 text-brand-on-surface-variant hover:text-white transition-all cursor-pointer"
+              className="relative p-2.5 rounded-xl hover:bg-brand-container-highest/50 active:scale-95 text-brand-on-surface-variant hover:text-brand-on-surface transition-all cursor-pointer"
               aria-label="Notificaciones"
             >
               <Bell className="w-5 h-5" />
@@ -149,7 +149,7 @@ export default function Header({
               <button 
                 id="close-profile-modal"
                 onClick={() => setProfileModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-white transition-all cursor-pointer"
+                className="p-1 rounded-lg hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-brand-on-surface transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -192,7 +192,7 @@ export default function Header({
                   value={driverName}
                   onChange={(e) => setDriverName(e.target.value)}
                   placeholder="Ej. Carlos Martínez"
-                  className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-primary transition-colors"
+                  className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:outline-none focus:border-brand-primary transition-colors"
                 />
               </div>
 
@@ -208,7 +208,7 @@ export default function Header({
                     value={carModel}
                     onChange={(e) => setCarModel(e.target.value)}
                     placeholder="Ej. Chevrolet Prism 1.4"
-                    className="w-full bg-brand-bg border border-brand-border rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-brand-primary transition-colors"
+                    className="w-full bg-brand-bg border border-brand-border rounded-lg pl-9 pr-3 py-2 text-sm text-brand-on-surface focus:outline-none focus:border-brand-primary transition-colors"
                   />
                 </div>
               </div>
@@ -272,12 +272,12 @@ export default function Header({
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-brand-border shrink-0">
               <div className="flex items-center gap-2">
                 <Bell className="w-5 h-5 text-brand-primary" />
-                <h3 className="font-bold text-lg text-white">Centro de Alertas</h3>
+                <h3 className="font-bold text-lg text-brand-on-surface">Centro de Alertas</h3>
               </div>
               <button 
                 id="close-notifications-drawer"
                 onClick={() => setNotificationsOpen(false)}
-                className="p-1 rounded-lg hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-white transition-all cursor-pointer"
+                className="p-1 rounded-lg hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-brand-on-surface transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -295,7 +295,7 @@ export default function Header({
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <span className={`text-xs font-bold ${
-                      alert.important ? "text-brand-primary" : "text-white"
+                      alert.important ? "text-brand-primary" : "text-brand-on-surface"
                     }`}>
                       {alert.title}
                     </span>
@@ -319,7 +319,7 @@ export default function Header({
               <div className="p-3.5 bg-brand-container-high/30 border border-brand-border/40 rounded-xl flex items-start gap-2.5">
                 <BadgeInfo className="w-4 h-4 text-brand-tertiary mt-0.5 shrink-0" />
                 <div>
-                  <span className="text-xs font-bold text-white block mb-0.5">Métrica Automatizada</span>
+                  <span className="text-xs font-bold text-brand-on-surface block mb-0.5">Métrica Automatizada</span>
                   <p className="text-[11px] text-brand-on-surface-variant leading-relaxed">
                     ¿Sabías que tu Margen Neto Real por Hora actual es de <strong className="text-brand-primary">14.50 USD/Hr</strong>? Esto es calculado dividiendo tu utilidad limpia tras restar insumos operacionales entre el tiempo de conducción registrado.
                   </p>

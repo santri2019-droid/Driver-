@@ -15,11 +15,14 @@ export default function GoalsTab({
 }: GoalsTabProps) {
   // Local form state
   const [lclGoal, setLclGoal] = useState(goals.monthlyGoal);
-  const [lclDays, setLclDays] = useState(goals.workingDaysPerWeek);
+  const [lclDays, setLclDays] = useState(goals.workingDaysPerMonth);
   const [lclSeguro, setLclSeguro] = useState(goals.monthlySeguro);
   const [lclPatente, setLclPatente] = useState(goals.monthlyPatente);
-  const [lclAlquiler, setLclAlquiler] = useState(goals.monthlyAlquiler);
+  const [lclFuelAverage, setLclFuelAverage] = useState(goals.monthlyFuelAverage || 400);
   
+  // Custom fixed expenses
+  const [lclCustomExpenses, setLclCustomExpenses] = useState(goals.customFixedExpenses || []);
+
   // Preventative maintenance variables
   const [lclOilInterval, setLclOilInterval] = useState(goals.oilInterval);
   const [lclOilCost, setLclOilCost] = useState(goals.oilCost);
@@ -37,10 +40,11 @@ export default function GoalsTab({
     
     const updatedGoals: GoalsConfig = {
       monthlyGoal: Number(lclGoal) || 0,
-      workingDaysPerWeek: Number(lclDays) || 6,
+      workingDaysPerMonth: Number(lclDays) || 24,
       monthlySeguro: Number(lclSeguro) || 0,
       monthlyPatente: Number(lclPatente) || 0,
-      monthlyAlquiler: Number(lclAlquiler) || 0,
+      monthlyFuelAverage: Number(lclFuelAverage) || 0,
+      customFixedExpenses: lclCustomExpenses,
       oilInterval: Number(lclOilInterval) || 10000,
       oilCost: Number(lclOilCost) || 0,
       tiresInterval: Number(lclTiresInterval) || 40000,
@@ -57,16 +61,17 @@ export default function GoalsTab({
   };
 
   const handleResetDefaults = () => {
-    setLclGoal(3500);
-    setLclDays(6);
-    setLclSeguro(120);
-    setLclPatente(45);
-    setLclAlquiler(0);
+    setLclGoal(250000);
+    setLclDays(24);
+    setLclSeguro(35000);
+    setLclPatente(15000);
+    setLclFuelAverage(60000);
+    setLclCustomExpenses([]);
     setLclOilInterval(10000);
-    setLclOilCost(85);
+    setLclOilCost(45000);
     setLclTiresInterval(40000);
-    setLclTiresCost(400);
-    setLclReserve(150);
+    setLclTiresCost(350000);
+    setLclReserve(50000);
   };
 
   return (
@@ -74,7 +79,7 @@ export default function GoalsTab({
       {/* Title Header */}
       <section className="space-y-1.5 flex justify-between items-start gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-white">Metas y Configuración</h2>
+          <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Metas y Configuración</h2>
           <p className="text-xs text-brand-on-surface-variant">
             Establece objetivos de rentabilidad, prorratea gastos fijos y optimiza tus fórmulas de conducción.
           </p>
@@ -97,7 +102,7 @@ export default function GoalsTab({
         <div className="bg-brand-container border border-brand-border rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 text-brand-primary border-b border-brand-border/40 pb-2">
             <Target className="w-4 h-4" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-white">Objetivo de Margen Neto</h3>
+            <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Objetivo de Margen Neto</h3>
           </div>
           
           <div className="space-y-1.5">
@@ -110,7 +115,7 @@ export default function GoalsTab({
                 type="number"
                 value={lclGoal}
                 onChange={(e) => setLclGoal(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg pl-8 pr-4 py-2 text-sm text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg pl-8 pr-4 py-2 text-sm text-brand-on-surface focus:outline-none focus:border-brand-primary"
                 placeholder="Ej. 3500"
               />
             </div>
@@ -124,22 +129,22 @@ export default function GoalsTab({
         <div className="bg-brand-container border border-brand-border rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 text-brand-secondary border-b border-brand-border/40 pb-2">
             <Shield className="w-4 h-4 text-brand-primary" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-white">Gastos Fijos Mensuales</h3>
+            <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Gastos Fijos Mensuales</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Working days */}
             <div className="space-y-1">
               <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-                Días de Trabajo Semanales
+                Días de Trabajo Mensuales
               </label>
               <input
                 type="number"
                 min="1"
-                max="7"
+                max="31"
                 value={lclDays}
                 onChange={(e) => setLclDays(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
 
@@ -152,7 +157,7 @@ export default function GoalsTab({
                 type="number"
                 value={lclSeguro}
                 onChange={(e) => setLclSeguro(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
 
@@ -165,30 +170,88 @@ export default function GoalsTab({
                 type="number"
                 value={lclPatente}
                 onChange={(e) => setLclPatente(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
 
-            {/* Rental Fee */}
+            {/* Combustible promedio mensual */}
             <div className="space-y-1">
               <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-                Alquiler de Vehículo Diario (Si aplica, {currencySymbol})
+                Combustible Promedio Mensual ({currencySymbol} / Mes)
               </label>
               <input
                 type="number"
-                value={lclAlquiler}
-                onChange={(e) => setLclAlquiler(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                value={lclFuelAverage}
+                onChange={(e) => setLclFuelAverage(Number(e.target.value))}
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
+
+
+            {/* Custom Fixed Expenses */}
+            {lclCustomExpenses.map((expense, index) => (
+              <div key={expense.id} className="col-span-1 sm:col-span-2 flex gap-2 items-end">
+                <div className="flex-1 space-y-1">
+                  <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">Nombre del Gasto</label>
+                  <input
+                    type="text"
+                    value={expense.name}
+                    onChange={(e) => {
+                      const updated = [...lclCustomExpenses];
+                      updated[index].name = e.target.value;
+                      setLclCustomExpenses(updated);
+                    }}
+                    placeholder="Ej. Seguro móvil"
+                    className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
+                  />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">Costo ({currencySymbol})</label>
+                  <input
+                    type="number"
+                    value={expense.amount}
+                    onChange={(e) => {
+                      const updated = [...lclCustomExpenses];
+                      updated[index].amount = Number(e.target.value);
+                      setLclCustomExpenses(updated);
+                    }}
+                    className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = [...lclCustomExpenses];
+                    updated.splice(index, 1);
+                    setLclCustomExpenses(updated);
+                  }}
+                  className="h-[34px] px-3 bg-brand-error/10 text-brand-error border border-brand-error/30 rounded-lg text-xs"
+                >
+                  X
+                </button>
+              </div>
+            ))}
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setLclCustomExpenses([
+                ...lclCustomExpenses,
+                { id: `expense-${Date.now()}`, name: "", amount: 0 }
+              ]);
+            }}
+            className="text-[11px] mt-2 font-bold text-brand-primary border border-brand-primary/30 bg-brand-primary/10 px-3 py-1.5 rounded-lg w-full flex items-center justify-center gap-2"
+          >
+            + Agregar nuevo gasto fijo mensual
+          </button>
         </div>
 
         {/* Module Section 3: Mantenimiento Preventivo */}
         <div className="bg-brand-container border border-brand-border rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 text-brand-tertiary border-b border-brand-border/40 pb-2">
             <Wrench className="w-4 h-4 text-brand-primary" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-white">Mantenimiento Preventivo</h3>
+            <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Mantenimiento Preventivo</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -202,7 +265,7 @@ export default function GoalsTab({
                 step="1000"
                 value={lclOilInterval}
                 onChange={(e) => setLclOilInterval(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
                 placeholder="Ej. 10000"
               />
             </div>
@@ -216,7 +279,7 @@ export default function GoalsTab({
                 type="number"
                 value={lclOilCost}
                 onChange={(e) => setLclOilCost(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
 
@@ -230,7 +293,7 @@ export default function GoalsTab({
                 step="5000"
                 value={lclTiresInterval}
                 onChange={(e) => setLclTiresInterval(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
                 placeholder="Ej. 40000"
               />
             </div>
@@ -244,7 +307,7 @@ export default function GoalsTab({
                 type="number"
                 value={lclTiresCost}
                 onChange={(e) => setLclTiresCost(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
               />
             </div>
           </div>
@@ -255,7 +318,7 @@ export default function GoalsTab({
           <div className="flex items-center justify-between border-b border-brand-border/40 pb-2">
             <span className="flex items-center gap-2 text-brand-primary">
               <PiggyBank className="w-5 h-5" />
-              <h3 className="font-bold text-xs uppercase tracking-wider text-white">Fondo de Reserva Vehicular</h3>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Fondo de Reserva Vehicular</h3>
             </span>
             <span className="text-sm font-black text-brand-primary font-mono select-none">
               {currencySymbol}{lclReserve}
@@ -272,13 +335,13 @@ export default function GoalsTab({
               <input
                 type="range"
                 min="0"
-                max="500"
-                step="10"
+                max="500000"
+                step="5000"
                 value={lclReserve}
                 onChange={(e) => setLclReserve(Number(e.target.value))}
                 className="flex-1 h-2 bg-brand-bg-darker rounded-lg appearance-none cursor-pointer accent-brand-primary"
               />
-              <span className="text-[10.5px] text-brand-on-surface-variant font-mono">{currencySymbol}500</span>
+              <span className="text-[10.5px] text-brand-on-surface-variant font-mono">{currencySymbol}500.000</span>
             </div>
 
             <p className="text-[10px] text-brand-on-surface-variant leading-relaxed">

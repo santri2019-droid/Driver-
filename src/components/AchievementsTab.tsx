@@ -22,7 +22,7 @@ export default function AchievementsTab({
   const currentTotalNetAccumulated = baselineNet + loggedNetSum;
 
   const averageOperatingExpense = logs.length > 0
-    ? logs.reduce((sum, log) => sum + log.fuelExpense + log.maintenanceExpense + log.reserveExpense, 0) / logs.length
+    ? logs.reduce((sum, log) => sum + log.fuelExpense + log.maintenanceExpense, 0) / logs.length
     : 35.5;
 
   const evaluateProgression = (ach: Achievement) => {
@@ -45,7 +45,7 @@ export default function AchievementsTab({
         };
       case "ach-4": // Meta Superada: days gross > calcDailyMeta
         const estimatedMonthlyNeeds = 1500 + goals.monthlySeguro + goals.monthlyPatente + goals.reserveFundMonthly;
-        const recommendedMeta = estimatedMonthlyNeeds / (goals.workingDaysPerWeek * 4.3);
+        const recommendedMeta = estimatedMonthlyNeeds / Math.max(1, goals.workingDaysPerMonth);
         const daysMeetingGoalCount = logs.filter(log => log.grossIncome >= recommendedMeta).length;
         
         return {
@@ -64,7 +64,7 @@ export default function AchievementsTab({
     <div className="space-y-6">
       {/* Title header block */}
       <section className="space-y-1.5">
-        <h2 className="text-xl md:text-2xl font-black text-white">Logros de Conductor</h2>
+        <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Logros de Conductor</h2>
         <p className="text-xs text-brand-on-surface-variant">
           Cumple tareas periódicas de ahorro, consistencia de carga y rentabilidad limpia para adquirir insignias y recompensas afiliadas.
         </p>
@@ -79,7 +79,7 @@ export default function AchievementsTab({
           </div>
           <div>
             <span className="text-[9px] text-brand-on-surface-variant uppercase tracking-wider font-bold block">Insignias Logradas</span>
-            <span className="text-lg font-extrabold text-white">
+            <span className="text-lg font-extrabold text-brand-on-surface">
               {achievements.filter(ach => evaluateProgression(ach).isUnlocked).length} / {achievements.length}
             </span>
           </div>
@@ -92,7 +92,7 @@ export default function AchievementsTab({
           </div>
           <div>
             <span className="text-[9px] text-brand-on-surface-variant uppercase tracking-wider font-bold block">Racha de Journal</span>
-            <span className="text-lg font-extrabold text-white">
+            <span className="text-lg font-extrabold text-brand-on-surface">
               {logs.length} Días Activos
             </span>
           </div>
@@ -105,7 +105,7 @@ export default function AchievementsTab({
           </div>
           <div>
             <span className="text-[9px] text-brand-on-surface-variant uppercase tracking-wider font-bold block">Gasto Promedio Día</span>
-            <span className="text-lg font-extrabold text-white">
+            <span className="text-lg font-extrabold text-brand-on-surface">
               {currencySymbol}{averageOperatingExpense.toFixed(2)}
             </span>
           </div>
@@ -146,7 +146,7 @@ export default function AchievementsTab({
                     <span className="text-[8px] uppercase tracking-widest font-black text-brand-on-surface-variant bg-brand-bg-darker px-2 py-0.5 rounded border border-brand-border">
                       {ach.category === "earnings" ? "Margen" : ach.category === "days" ? "Jornada" : "Gastos"}
                     </span>
-                    <h4 className="text-xs md:text-sm font-extrabold text-white pt-1">{ach.title}</h4>
+                    <h4 className="text-xs md:text-sm font-extrabold text-brand-on-surface pt-1">{ach.title}</h4>
                     <p className="text-[11px] text-brand-on-surface-variant leading-relaxed">
                       {ach.description}
                     </p>
@@ -167,7 +167,7 @@ export default function AchievementsTab({
                     <span>
                       {ach.category === "savings" ? "Costo operativo promedio" : "Progreso"}
                     </span>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-brand-on-surface">
                       {ach.id === "ach-1" 
                         ? `${currencySymbol}${current.toFixed(0)} / ${currencySymbol}${ach.targetCount}`
                         : ach.id === "ach-3"
@@ -195,7 +195,7 @@ export default function AchievementsTab({
                     : "bg-brand-container-highest/20 text-brand-on-surface-variant border border-brand-border/30"
                 }`}>
                   <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Sello: <strong className="text-white">{ach.rewardText}</strong></span>
+                  <span>Sello: <strong className="text-brand-on-surface">{ach.rewardText}</strong></span>
                 </div>
               </div>
             );

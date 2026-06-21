@@ -1,0 +1,8 @@
+Iniciar 
+
+
+Si aún no has iniciado el servidor de desarrollo, puedes hacerlo ejecutando el siguiente comando en la terminal desde la raíz del proyecto:
+cd c:\PROYECTOS_Antigravity_Driver_Repo
+npm run dev
+
+http://localhost:3000/
