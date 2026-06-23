@@ -14,12 +14,10 @@ export default function BottomNav({
   
   const navItems = [
     { id: "home", label: "Hogar", icon: Home },
-    { id: "advances", label: "Adelantos", icon: Landmark },
     { id: "journal", label: "Diario", icon: BookOpen },
     { id: "goals", label: "Objetivos", icon: Target },
     { id: "achievements", label: "Logros", icon: Award },
-    { id: "dashboard", label: "Panel", icon: LayoutDashboard },
-    { id: "settings", label: "Ajustes", icon: Settings },
+    { id: "advances", label: "Adelantos", icon: Landmark },
   ];
 
   return (

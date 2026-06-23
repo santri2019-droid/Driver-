@@ -105,7 +105,7 @@ export default function Header({
               <div className="h-6 w-[1px] bg-brand-border"></div>
               <div>
                 <span className="text-brand-on-surface-variant block text-[9px] uppercase tracking-wide">Divisa</span>
-                <span className="font-bold text-brand-primary uppercase">{currencySymbol} (USD)</span>
+                <span className="font-bold text-brand-primary uppercase">{currencySymbol} (ARS)</span>
               </div>
             </div>
 
@@ -220,7 +220,7 @@ export default function Header({
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { symbol: "$", label: "USD/ARS/MXN" },
+                    { symbol: "$", label: "ARS" },
                     { symbol: "€", label: "Euro" },
                     { symbol: "R$", label: "Real" },
                     { symbol: "CLP", label: "Pesos Ch." }
@@ -321,7 +321,7 @@ export default function Header({
                 <div>
                   <span className="text-xs font-bold text-brand-on-surface block mb-0.5">Métrica Automatizada</span>
                   <p className="text-[11px] text-brand-on-surface-variant leading-relaxed">
-                    ¿Sabías que tu Margen Neto Real por Hora actual es de <strong className="text-brand-primary">14.50 USD/Hr</strong>? Esto es calculado dividiendo tu utilidad limpia tras restar insumos operacionales entre el tiempo de conducción registrado.
+                    ¿Sabías que tu Margen Neto Real por Hora actual es de <strong className="text-brand-primary">14.50 ARS/Hr</strong>? Esto es calculado dividiendo tu utilidad limpia tras restar insumos operacionales entre el tiempo de conducción registrado.
                   </p>
                 </div>
               </div>

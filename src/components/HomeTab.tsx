@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Timer, ArrowRight, Play, Square, Calendar, Flag, Settings2, HelpCircle, Car, TrendingUp, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Timer, ArrowRight, Play, Square, Calendar, Flag, Settings2, HelpCircle, Car, TrendingUp, ChevronRight, CheckCircle2, User, Moon, Sun, Trash2, LogIn, ChevronDown, ChevronUp } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { DriverLog, GoalsConfig } from "../types";
 
 interface HomeTabProps {
@@ -10,6 +11,9 @@ interface HomeTabProps {
   setIsShiftActive: (active: boolean) => void;
   shiftSeconds: number;
   setShiftSeconds: (val: number | ((prev: number) => number)) => void;
+  onResetAllData: () => void;
+  isDarkMode: boolean;
+  setIsDarkMode: (val: boolean) => void;
 }
 
 export default function HomeTab({
@@ -20,10 +24,33 @@ export default function HomeTab({
   setIsShiftActive,
   shiftSeconds,
   setShiftSeconds,
+  onResetAllData,
+  isDarkMode,
+  setIsDarkMode,
 }: HomeTabProps) {
   const [showFormulaTooltip, setShowFormulaTooltip] = useState<string | null>(null);
   const [swipeProgress, setSwipeProgress] = useState(0); // for simulating slide-to-start drag
   const [isSwiping, setIsSwiping] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(email && password) {
+      setIsLoggedIn(true);
+    }
+  };
+
+  const handleReset = () => {
+    if (window.confirm("¿Estás seguro de que deseas borrar toda tu información? Esto no se puede deshacer.")) {
+      onResetAllData();
+      alert("Información reseteada.");
+    }
+  };
 
   // Formatting helper for duration
   const formatDuration = (totalSeconds: number) => {
@@ -53,6 +80,20 @@ export default function HomeTab({
   
   const customFixedExpensesSum = (goals.customFixedExpenses || []).reduce((sum, exp) => sum + exp.amount, 0);
 
+  const totalGastosFijosMensuales = (goals.monthlySeguro || 0) + (goals.monthlyPatente || 0) + (goals.monthlyFuelAverage || 0) + customFixedExpensesSum;
+  const totalFacturacion = currentLogsGrossSum;
+  const displayedMargenNeto = totalFacturacion - totalGastosFijosMensuales;
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const kmsDelMes = logs
+    .filter(log => {
+      if (!log.date) return false;
+      const d = new Date(log.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    })
+    .reduce((sum, log) => sum + (log.kilometers || 0), 0);
+
   const totalMonthlyNeeds = 
     estimatedMonthlyLifeExpense + 
     goals.monthlySeguro + 
@@ -62,12 +103,72 @@ export default function HomeTab({
     customFixedExpensesSum;
 
   const monthlyWorkingDays = goals.workingDaysPerMonth;
-  const calculatedDailyMeta = totalMonthlyNeeds / Math.max(1, monthlyWorkingDays);
+  const today = new Date();
+  const daysLeftInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() - today.getDate();
+  const plannedRemaining = monthlyWorkingDays - logs.length;
+  // Limitar a los días del mes y asegurar un mínimo de 1 para evitar divisiones por cero
+  const remainingWorkingDays = Math.max(1, Math.min(plannedRemaining, daysLeftInMonth));
+  const calculatedDailyMeta = (goals.monthlyGoal - totalFacturacion) / remainingWorkingDays;
 
   // Daily Operative Cost calculation
   const avgLogOperativeCost = logs.length > 0 
     ? (logs.reduce((sum, l) => sum + l.fuelExpense + l.maintenanceExpense + (l.otherExpense || 0), 0) / logs.length) * scale
     : 35500;
+
+  const junGross = currentLogsGrossSum;
+  const junNet = displayedMargenNeto;
+  const junFuel = currentLogsFuelSumScaled;
+  const junOthers = currentLogsMaintSumScaled;
+  const junKms = kmsDelMes > 0 ? kmsDelMes : 5800; // fallback si no hay kms
+  const junFixed = totalGastosFijosMensuales;
+
+  const monthlyData = [
+    { name: "Ene", facturacion: 320000, margenNeto: 180000, combustible: 80000, otrosGastos: 20000, kms: 4200, gastosFijos: 40000 },
+    { name: "Feb", facturacion: 350000, margenNeto: 195000, combustible: 85000, otrosGastos: 25000, kms: 4500, gastosFijos: 45000 },
+    { name: "Mar", facturacion: 380000, margenNeto: 210000, combustible: 90000, otrosGastos: 28000, kms: 4800, gastosFijos: 52000 },
+    { name: "Abr", facturacion: 400000, margenNeto: 220000, combustible: 98000, otrosGastos: 30000, kms: 5100, gastosFijos: 52000 },
+    { name: "May", facturacion: 430000, margenNeto: 245000, combustible: 105000, otrosGastos: 28000, kms: 5500, gastosFijos: 52000 },
+    { name: "Jun", facturacion: junGross, margenNeto: junNet, combustible: junFuel, otrosGastos: junOthers, kms: junKms, gastosFijos: junFixed },
+  ];
+
+  const renderAreaChart = (title: string, dataKey: string, color: string, currentVal: number) => {
+    const gradId = `color-${dataKey}`;
+    return (
+      <div className="bg-brand-container border border-brand-border rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-0.5">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-brand-on-surface-variant block">
+              {title}
+            </span>
+            <span className="text-xl font-extrabold text-brand-on-surface">
+              {dataKey === "kms" ? "" : currencySymbol}{Math.round(currentVal).toLocaleString()}
+              {dataKey === "kms" ? " Kms" : ""}
+            </span>
+          </div>
+        </div>
+
+        <div className="h-32 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={monthlyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor={color} stopOpacity={0.0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke="#5D6D61" fontSize={9} tickLine={false} />
+              <YAxis stroke="#5D6D61" fontSize={9} tickLine={false} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#161D18', borderColor: '#263229', color: '#fff', fontSize: '11px', borderRadius: '8px' }} 
+                formatter={(val: any) => [`${dataKey === "kms" ? "" : currencySymbol}${Number(val).toLocaleString()}${dataKey === "kms" ? " Kms" : ""}`, title]}
+              />
+              <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} fillOpacity={1} fill={`url(#${gradId})`} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
+  };
 
   // Swipe logic simulation
   const handleSwipeStart = () => {
@@ -222,11 +323,11 @@ export default function HomeTab({
                 <h3 className="font-bold text-lg tracking-tight text-brand-on-surface">Objetivo diario</h3>
               </div>
               <p className="text-2xl font-black text-brand-on-surface">
-                {currencySymbol}{calculatedDailyMeta.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencySymbol}{calculatedDailyMeta.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>
             <div className="bg-brand-container-highest/60 border border-brand-border/60 px-2.5 py-1.5 rounded-xl text-center">
-              <span className="text-brand-primary font-black text-lg block leading-none">12</span>
+              <span className="text-brand-primary font-black text-lg block leading-none">{remainingWorkingDays}</span>
               <span className="text-[8px] text-brand-on-surface-variant uppercase tracking-tight block mt-0.5">Días hábiles rest.</span>
             </div>
           </div>
@@ -250,211 +351,231 @@ export default function HomeTab({
 
           {showFormulaTooltip === "verdad" && (
             <div className="bg-brand-container-highest border border-brand-border rounded-xl p-3 text-lg text-left max-w-sm mt-1 animate-fade-in absolute z-20">
-              <p className="font-bold text-brand-on-surface mb-1">Margen Neto acumulado mensual:</p>
+              <p className="font-bold text-brand-on-surface mb-1">Margen Neto Mensual:</p>
               <p className="text-brand-on-surface-variant leading-relaxed mb-2">
-                Representa tu facturación limpia. Descuenta combustible gastado y reparaciones.
+                Fórmula: Facturación - Gastos Fijos Mensuales. Se muestra en negativo hasta cubrir los gastos.
               </p>
             </div>
           )}
 
-          <div className="text-[38px] md:text-5xl font-extrabold text-brand-primary tracking-tight font-sans select-all my-1">
-            {currencySymbol}{totalMonthlyNet.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className={`text-[38px] md:text-5xl font-extrabold tracking-tight font-sans select-all my-1 ${displayedMargenNeto < 0 ? "text-brand-error" : "text-brand-primary"}`}>
+            {displayedMargenNeto < 0 ? "-" : ""}{currencySymbol}{Math.abs(displayedMargenNeto).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </div>
+
+          {/* Nueva sección de Facturación */}
+          <div className="flex flex-col items-center justify-center mt-3 pt-3 border-t border-brand-border/40 w-full relative z-10">
+            <span className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-widest">Facturación Total Mensual</span>
+            <span className="text-[38px] md:text-5xl font-extrabold text-brand-primary mt-1">
+              {currencySymbol}{totalFacturacion.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </span>
           </div>
         </div>
 
-        {/* Right: Ganancia Neta Donut Chart (Compact on mobile) - order-3 on mobile, md:order-2 on desktop */}
-        <div id="ganancia-neta-avance" className="order-3 md:order-2 bg-brand-container border border-brand-border rounded-2xl p-4 md:p-6 shadow-xl flex flex-col items-center justify-center gap-2 md:gap-3">
-          <span className="font-semibold text-xs md:text-sm lg:text-lg text-brand-on-surface-variant uppercase tracking-widest text-center animate-pulse">
-            Avance Ganancia Neta
-          </span>
-          <div className="relative w-20 h-20 md:w-32 md:h-32">
-            <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-              <path
-                className="text-brand-bg-darker stroke-current"
-                strokeWidth="4"
-                fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <path
-                className="text-brand-primary stroke-current"
-                strokeWidth="4"
-                strokeDasharray={`${Math.min(100, (totalMonthlyNet / Math.max(1, goals.monthlyGoal)) * 100)}, 100`}
-                fill="none"
-                strokeLinecap="round"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm md:text-lg font-bold text-brand-on-surface">{Math.round((totalMonthlyNet / Math.max(1, goals.monthlyGoal)) * 100)}%</span>
-            </div>
-          </div>
-          <span className="text-sm md:text-lg text-brand-on-surface-variant">Meta: {currencySymbol}{goals.monthlyGoal}</span>
-        </div>
-
-        {/* Card: Resumen Gastos Auto Diario - order-4 on mobile, md:order-4 on desktop */}
-        <div id="costo-operativo-card" className="order-4 md:order-4 bg-brand-container border border-brand-border rounded-2xl p-5 flex flex-col gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-brand-error">
-              <Car className="w-4 h-4 text-brand-error" />
-              <h3 className="font-bold text-lg tracking-tight text-brand-on-surface">Costo Operativo Diario Prorrateado</h3>
-            </div>
-            <p className="text-2xl font-black text-brand-on-surface">
-              {currencySymbol}{avgLogOperativeCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5 text-lg bg-brand-bg-darker/35 p-2 rounded-xl border border-brand-border/20">
-            {[
-              { label: "Combustible", checked: true },
-              { label: "Mantenimiento", checked: true },
-              { label: "Seguro de Auto", checked: true },
-              { label: "Depreciación", checked: true },
-              { label: "Patente/Fijos", checked: true },
-              { label: "Otros Gastos", checked: true },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-1 text-brand-on-surface-variant font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-primary shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Bar Chart: Ingreso Bruto vs Margen Neto */}
-      <section id="grafico-semanal" className="bg-brand-container border border-brand-border rounded-2xl p-5 space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="space-y-0.5">
-            <h3 className="font-bold text-lg md:text-lg text-brand-on-surface">Bruto vs Neto (Últ. 7 Días)</h3>
-            <p className="text-lg text-brand-on-surface-variant">Comparación de facturación bruta contra beneficio neto diario</p>
-          </div>
-          <div className="bg-brand-container-highest p-2 rounded-lg text-brand-primary">
-            <TrendingUp className="w-4 h-4" />
-          </div>
-        </div>
-
-        {/* Custom Visual Bar Chart inside vector bounds */}
-        <div className="relative h-44 flex flex-col justify-end mt-4 pt-4">
+        {/* Right: Ganancia Neta Donut Chart & KMS - order-3 on mobile, md:order-2 on desktop */}
+        <div id="ganancia-neta-avance" className="order-3 md:order-2 bg-brand-container border border-brand-border rounded-2xl p-4 md:p-5 shadow-xl flex items-center justify-center gap-8 md:gap-12">
           
-          {/* Y Axis Grid lines */}
-          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[8px] font-mono text-brand-on-surface-variant text-left pl-1">
-            <div className="border-b border-brand-border/30 w-full pb-0.5"><span>$200</span></div>
-            <div className="border-b border-brand-border/30 w-full pb-0.5"><span>$100</span></div>
-            <div className="border-b border-brand-border/30 w-full pb-0.5"><span>$50</span></div>
-            <div className="pt-0.5"><span>$0</span></div>
+          {/* Left: Donut Chart */}
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="font-semibold text-[10px] md:text-xs text-brand-on-surface-variant uppercase tracking-widest text-center animate-pulse">
+              Facturacion
+            </span>
+            <div className="relative w-16 h-16 md:w-20 md:h-20">
+              <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                <path
+                  className="text-brand-bg-darker stroke-current"
+                  strokeWidth="4"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="text-brand-primary stroke-current"
+                  strokeWidth="4"
+                  strokeDasharray={`${Math.min(100, (totalMonthlyNet / Math.max(1, goals.monthlyGoal)) * 100)}, 100`}
+                  fill="none"
+                  strokeLinecap="round"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-xs font-bold text-brand-on-surface">{Math.round((totalMonthlyNet / Math.max(1, goals.monthlyGoal)) * 100)}%</span>
+              </div>
+            </div>
+            <span className="text-[11px] text-brand-on-surface-variant">Meta: {currencySymbol}{goals.monthlyGoal}</span>
           </div>
 
-          {/* Columns container */}
-          <div className="h-full flex-1 flex justify-around items-end pl-10 relative z-10 gap-2">
-            {chartData.map((data, idx) => {
-              // Calculate percent rates (max is 200 for calculation layout)
-              const maxVal = 200;
-              const grossHeight = Math.max(8, Math.min(100, (data.gross / maxVal) * 100));
-              const netHeight = Math.max(4, Math.min(100, (data.net / maxVal) * 100));
-
-              return (
-                <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group select-none">
-                  {/* Tooltip on hover */}
-                  <div className="absolute bottom-[110%] bg-brand-container-highest/95 border border-brand-border text-lg p-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 shrink-0 text-left min-w-[120px]">
-                    <p className="font-bold text-brand-on-surface border-b border-brand-border/50 pb-0.5 mb-1">Día {data.label}</p>
-                    <p className="text-brand-on-surface-variant">Bruto: <strong className="text-brand-on-surface">{currencySymbol}{data.gross}</strong></p>
-                    <p className="text-brand-primary">Neto: <strong className="font-extrabold">{currencySymbol}{data.net}</strong></p>
-                    <p className="text-[8px] text-brand-on-surface-variant/70 italic mt-0.5">
-                      {data.empty ? "Preestablecido" : "Registro real"}
-                    </p>
-                  </div>
-
-                  <div className="w-full max-w-[32px] flex items-end justify-center gap-1 h-full cursor-pointer">
-                    {/* Gross Bar */}
-                    <div 
-                      className={`w-1/2 rounded-t transition-all duration-500 hover:brightness-110 ${
-                        data.empty ? "bg-brand-container-highest/30 border border-brand-border/30 border-dashed" : "bg-brand-container-highest"
-                      }`}
-                      style={{ height: `${grossHeight}%` }}
-                    ></div>
-
-                    {/* Net Bar */}
-                    <div 
-                      className={`w-1/2 rounded-t transition-all duration-500 hover:brightness-110 ${
-                        data.empty ? "bg-brand-primary-container/20 border border-dash border-brand-primary/20" : "bg-brand-primary"
-                      }`}
-                      style={{ height: `${netHeight}%` }}
-                    ></div>
-                  </div>
-
-                  {/* Day Letter Label */}
-                  <span className={`text-lg font-bold mt-2 font-mono ${data.label === "S" ? "text-brand-primary" : "text-brand-on-surface-variant"}`}>
-                    {data.label}
-                  </span>
-                </div>
-              );
-            })}
+          {/* Right: KMS Counter */}
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-[#0A0D0B] p-1.5 rounded border border-brand-border/40">
+                <Car className="w-4 h-4 text-brand-primary" />
+              </div>
+              <span className="text-xs font-medium text-brand-on-surface">Kms mes</span>
+            </div>
+            <div className="bg-[#0A0D0B] border border-brand-border/40 rounded-xl px-6 py-2.5 min-w-[90px] flex items-center justify-center">
+              <span className="text-3xl md:text-4xl font-extrabold text-brand-primary tracking-tighter">
+                {kmsDelMes.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="flex justify-center gap-6 pt-2 border-t border-brand-border/40 text-lg text-brand-on-surface-variant">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded bg-brand-container-highest block"></span>
-            <span>Facturación Bruta (Ingresos)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded bg-brand-primary block"></span>
-            <span>Margen de Ganancia Neto</span>
-          </div>
-        </div>
+
       </section>
+
+
 
       {/* Progress Bars: Budget of Monthly Expenses */}
       <section id="presupuesto-mensual" className="bg-brand-container border border-brand-border rounded-2xl p-5 space-y-4">
         <div className="space-y-0.5">
-          <h3 className="font-bold text-lg md:text-lg text-brand-on-surface">Gastos del mes</h3>
+          <h3 className="font-bold text-lg md:text-lg text-brand-on-surface">Combustible mes</h3>
         </div>
 
         <div className="space-y-4 pt-1">
-          {/* Progress Item 1: Combustible */}
+          {/* Progress Item 1: Combustible Presupuestado */}
           <div>
-            <div className="flex justify-between items-end mb-1.5 text-lg">
-              <span className="font-semibold text-brand-on-surface flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-brand-primary"></span>
-                Combustible mes
+            <div className="flex justify-between items-end mb-1.5">
+              <span className="font-semibold text-brand-primary flex items-center gap-1.5 text-xs uppercase tracking-wider">
+                Presupuesto
               </span>
-              <span className="font-mono text-brand-on-surface-variant">
-                {currencySymbol}{currentLogsFuelSumScaled.toLocaleString()} / {currencySymbol}{(goals.monthlyFuelAverage || 400).toLocaleString()}
+              <span className="font-mono text-brand-primary text-xs">
+                {currencySymbol}{(goals.monthlyFuelAverage || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {currencySymbol}{(800000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
             </div>
             
-            {/* Thick to thin style track */}
             <div className="h-2.5 w-full bg-brand-primary/10 rounded-full overflow-hidden p-[2px] border border-brand-primary/15">
               <div 
                 className="h-full bg-brand-primary rounded-full transition-all duration-700" 
-                style={{ width: `${Math.min(100, (currentLogsFuelSumScaled / Math.max(1, goals.monthlyFuelAverage || 400)) * 100)}%` }}
+                style={{ width: `${Math.min(100, ((goals.monthlyFuelAverage || 0) / 800000) * 100)}%` }}
               ></div>
             </div>
           </div>
 
-          {/* Progress Item 2: Mantenimiento */}
-          <div>
-            <div className="flex justify-between items-end mb-1.5 text-lg">
-              <span className="font-semibold text-brand-on-surface flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-brand-secondary"></span>
-                Mantenimientos+otros
+          {/* Progress Item 2: Combustible Consumido (Diario) */}
+          <div className="pt-2">
+            <div className="flex justify-between items-end mb-1.5">
+              <span className="font-semibold text-white flex items-center gap-1.5 text-xs uppercase tracking-wider">
+                Gastado
               </span>
-              <span className="font-mono text-brand-on-surface-variant">
-                {currencySymbol}{currentLogsMaintSumScaled.toLocaleString()} / {currencySymbol}{(150 * scale).toLocaleString()}
+              <span className="font-mono text-white text-xs">
+                {currencySymbol}{currentLogsFuelSumScaled.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {currencySymbol}{(800000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
             </div>
             
-            <div className="h-2.5 w-full bg-brand-secondary/10 rounded-full overflow-hidden p-[2px] border border-brand-secondary/15">
+            <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden p-[2px] border border-white/15">
               <div 
-                className="h-full bg-brand-secondary rounded-full transition-all duration-700" 
-                style={{ width: `${Math.min(100, (currentLogsMaintSumScaled / (150 * scale)) * 100)}%` }}
+                className="h-full bg-white rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(255,255,255,0.6)]" 
+                style={{ width: `${Math.min(100, (currentLogsFuelSumScaled / 800000) * 100)}%` }}
               ></div>
             </div>
           </div>
 
 
+
+
         </div>
+      </section>
+
+      {/* HISTÓRICO Y AJUSTES */}
+      <section className="pt-6 border-t border-brand-border/40 mt-6 space-y-6">
+        <button 
+          onClick={() => setShowHistory(!showHistory)}
+          className="w-full bg-brand-container border border-brand-border rounded-xl p-4 flex items-center justify-between shadow-sm hover:bg-brand-container-highest/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <TrendingUp className="w-5 h-5 text-brand-primary" />
+            <span className="font-bold text-brand-on-surface">Ver Histórico de Métricas</span>
+          </div>
+          {showHistory ? <ChevronUp className="w-5 h-5 text-brand-on-surface-variant" /> : <ChevronDown className="w-5 h-5 text-brand-on-surface-variant" />}
+        </button>
+
+        {showHistory && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+            {renderAreaChart("Margen Neto mes", "margenNeto", "#0AE182", junNet)}
+            {renderAreaChart("Facturación mes", "facturacion", "#00E676", junGross)}
+            {renderAreaChart("Combustible mes", "combustible", "#FFB95F", junFuel)}
+            {renderAreaChart("Otros gastos", "otrosGastos", "#FF8A80", junOthers)}
+            {renderAreaChart("Kms mes", "kms", "#1890FF", junKms)}
+            {renderAreaChart("Gastos Fijos mes", "gastosFijos", "#B9C7E0", junFixed)}
+          </div>
+        )}
+
+        {/* AJUSTES */}
+        <div className="space-y-4 pt-4">
+          <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Ajustes</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Auth Module */}
+            <section className="bg-brand-container border border-brand-border rounded-2xl p-5 shadow-lg space-y-4">
+              <div className="flex items-center gap-2 border-b border-brand-border/40 pb-2">
+                <User className="w-5 h-5 text-brand-primary" />
+                <h3 className="font-bold text-sm text-brand-on-surface">Cuenta y Sincronización</h3>
+              </div>
+              
+              {isLoggedIn ? (
+                <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-xl text-sm font-semibold">
+                  Conectado como {email}
+                  <button onClick={() => setIsLoggedIn(false)} className="ml-4 underline text-xs">Cerrar Sesión</button>
+                </div>
+              ) : (
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-brand-on-surface-variant uppercase">Correo Electrónico</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:border-brand-primary outline-none" required />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-brand-on-surface-variant uppercase">Contraseña</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:border-brand-primary outline-none" required />
+                  </div>
+                  <div className="flex justify-between items-center pt-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsRegisterMode(!isRegisterMode)}
+                      className="text-xs text-brand-primary hover:underline"
+                    >
+                      {isRegisterMode ? "¿Ya tienes cuenta? Inicia Sesión" : "¿No tienes cuenta? Regístrate"}
+                    </button>
+                    <button type="submit" className="bg-brand-primary text-black font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-sm hover:brightness-110">
+                      <LogIn className="w-4 h-4" /> {isRegisterMode ? "Crear Cuenta" : "Iniciar Sesión"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
+
+            <div className="space-y-4">
+              {/* Appearance Module */}
+              <section className="bg-brand-container border border-brand-border rounded-2xl p-5 shadow-lg space-y-4 flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-brand-on-surface flex items-center gap-2">
+                    {isDarkMode ? <Moon className="w-4 h-4 text-brand-primary"/> : <Sun className="w-4 h-4 text-brand-primary"/>}
+                    Modo Visual
+                  </h3>
+                  <p className="text-xs text-brand-on-surface-variant">Alternar entre modo Noche y Día</p>
+                </div>
+                <button 
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className={`w-12 h-6 rounded-full relative transition-colors ${isDarkMode ? 'bg-brand-primary' : 'bg-brand-border'}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${isDarkMode ? 'translate-x-7' : 'translate-x-1'}`}></div>
+                </button>
+              </section>
+
+              {/* Danger Zone */}
+              <section className="bg-brand-error/5 border border-brand-error/20 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-brand-error flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Zona de Peligro
+                  </h3>
+                  <p className="text-xs text-brand-on-surface-variant">Borra toda tu información registrada y vuelve a cero.</p>
+                </div>
+                <button onClick={handleReset} className="w-full bg-brand-error/10 text-brand-error border border-brand-error/30 hover:bg-brand-error/20 hover:border-brand-error font-bold py-3 rounded-xl text-sm transition-all">
+                  Resetear Información
+                </button>
+              </section>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
   );

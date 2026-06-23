@@ -102,12 +102,12 @@ export default function GoalsTab({
         <div className="bg-brand-container border border-brand-border rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 text-brand-primary border-b border-brand-border/40 pb-2">
             <Target className="w-4 h-4" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Objetivo de Margen Neto</h3>
+            <h3 className="font-bold text-xs uppercase tracking-wider text-brand-on-surface">Objetivo de trabajo</h3>
           </div>
           
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-brand-on-surface-variant block uppercase tracking-wide">
-              Meta Limpia Mensual Deseada (USD)
+              Facturacion mes
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-2.5 text-xs font-bold text-brand-primary">{currencySymbol}</span>
@@ -123,6 +123,21 @@ export default function GoalsTab({
               Esta meta se dividirá automáticamente por tus jornadas laborales mensuales para proyectar tu "Meta Diaria" recomendada.
             </p>
           </div>
+
+          {/* Working days moved here */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
+              Días de Trabajo x mes
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={lclDays}
+              onChange={(e) => setLclDays(Number(e.target.value))}
+              className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
+            />
+          </div>
         </div>
 
         {/* Module Section 2: Gastos Fijos Mensuales */}
@@ -133,20 +148,6 @@ export default function GoalsTab({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Working days */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-                Días de Trabajo Mensuales
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="31"
-                value={lclDays}
-                onChange={(e) => setLclDays(Number(e.target.value))}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-on-surface focus:outline-none focus:border-brand-primary"
-              />
-            </div>
 
             {/* Insurance Seguro */}
             <div className="space-y-1">

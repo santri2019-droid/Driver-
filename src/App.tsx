@@ -6,8 +6,7 @@ import AdvancesTab from "./components/AdvancesTab";
 import JournalTab from "./components/JournalTab";
 import GoalsTab from "./components/GoalsTab";
 import AchievementsTab from "./components/AchievementsTab";
-import DashboardTab from "./components/DashboardTab";
-import SettingsTab from "./components/SettingsTab";
+import OnboardingWizard from "./components/OnboardingWizard";
 
 import { 
   initialLogs, 
@@ -38,6 +37,10 @@ export default function App() {
     return localStorage.getItem("dc_darkMode") !== "false";
   });
   const [unreadNotifications, setUnreadNotifications] = useState<number>(2);
+
+  const [hasOnboarded, setHasOnboarded] = useState<boolean>(() => {
+    return localStorage.getItem("dc_onboarded") === "true";
+  });
 
   // Core logs state with LocalStorage persistence and safe parsing
   const [logs, setLogs] = useState<DriverLog[]>(() => {
@@ -146,6 +149,10 @@ export default function App() {
     localStorage.setItem("dc_shiftSeconds", shiftSeconds.toString());
   }, [shiftSeconds]);
 
+  useEffect(() => {
+    localStorage.setItem("dc_onboarded", hasOnboarded ? "true" : "false");
+  }, [hasOnboarded]);
+
   // Stopwatch Interval countdown ticking loop
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -183,6 +190,27 @@ export default function App() {
       if (formInput) (formInput as HTMLInputElement).focus();
     }, 150);
   };
+
+  if (!hasOnboarded) {
+    return (
+      <OnboardingWizard 
+        onComplete={(name, model, goal, days, seguro, patente, fuel) => {
+          setDriverName(name);
+          setCarModel(model);
+          setGoals({
+            ...goals,
+            monthlyGoal: goal,
+            workingDaysPerMonth: days,
+            monthlySeguro: seguro,
+            monthlyPatente: patente,
+            // Guardamos el gasto promedio de combustible en los custom expenses temporalmente
+            // o lo usamos de base. Por ahora no lo aplicamos a "goals" base si no hay campo.
+          });
+          setHasOnboarded(true);
+        }} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-on-surface antialiased flex flex-col selection:bg-brand-primary/20 selection:text-brand-primary">
@@ -224,6 +252,9 @@ export default function App() {
               setIsShiftActive={setIsShiftActive}
               shiftSeconds={shiftSeconds}
               setShiftSeconds={setShiftSeconds}
+              onResetAllData={handleResetAllData}
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
             />
           )}
 
@@ -259,22 +290,6 @@ export default function App() {
               goals={goals}
               achievements={INITIAL_ACHIEVEMENTS}
               currencySymbol={currencySymbol}
-            />
-          )}
-
-          {selectedTab === "dashboard" && (
-            <DashboardTab
-              logs={logs}
-              goals={goals}
-              currencySymbol={currencySymbol}
-            />
-          )}
-
-          {selectedTab === "settings" && (
-            <SettingsTab
-              onResetAllData={handleResetAllData}
-              isDarkMode={isDarkMode}
-              setIsDarkMode={setIsDarkMode}
             />
           )}
         </main>

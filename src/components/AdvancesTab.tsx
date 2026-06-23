@@ -118,7 +118,7 @@ export default function AdvancesTab({
         <div className="space-y-1 text-center sm:text-left">
           <span className="text-[10px] font-bold uppercase tracking-wider text-brand-on-surface-variant block">Disponible para Adelantos</span>
           <span className="text-3xl font-extrabold text-brand-primary font-mono block">
-            {currencySymbol}{withdrawableAvailable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {currencySymbol}{withdrawableAvailable.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
           <span className="text-[10px] text-brand-on-surface-variant block">
             Límite prudencial: 85% de tu ganancia neta total acumulada mensual.

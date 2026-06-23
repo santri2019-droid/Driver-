@@ -17,16 +17,16 @@ export default function JournalTab({
 }: JournalTabProps) {
   // Calendar row selector choices
   const initialDays = [
-    { key: "L", label: "LUN", num: 12, dateStr: "2026-06-12" },
-    { key: "M", label: "MAR", num: 13, dateStr: "2026-06-13" },
-    { key: "X", label: "MIE", num: 14, dateStr: "2026-06-14" },
-    { key: "J", label: "JUE", num: 15, dateStr: "2026-06-15" },
-    { key: "V", label: "VIE", num: 16, dateStr: "2026-06-16" },
-    { key: "S", label: "SAB", num: 17, dateStr: "2026-06-17" },
-    { key: "D", label: "DOM", num: 18, dateStr: "2026-06-18" },
+    { key: "L", label: "LUN", num: 22, dateStr: "2026-06-22" },
+    { key: "M", label: "MAR", num: 23, dateStr: "2026-06-23" },
+    { key: "X", label: "MIE", num: 24, dateStr: "2026-06-24" },
+    { key: "J", label: "JUE", num: 25, dateStr: "2026-06-25" },
+    { key: "V", label: "VIE", num: 26, dateStr: "2026-06-26" },
+    { key: "S", label: "SAB", num: 27, dateStr: "2026-06-27" },
+    { key: "D", label: "DOM", num: 28, dateStr: "2026-06-28" },
   ];
 
-  const [selectedDayObj, setSelectedDayObj] = useState(initialDays[5]); // SAB 17 as default corresponding to today
+  const [selectedDayObj, setSelectedDayObj] = useState(initialDays[0]); // LUN 22 as default corresponding to today
   
   // Input fields state
   const [incomesState, setIncomesState] = useState<{ id: string; source: string; amount: number }[]>([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 120 }]);
