@@ -62,7 +62,19 @@ export default function HomeTab({
         }
         localStorage.setItem("dc_auth_email", email);
       } catch (error: any) {
-        setAuthError(error.message);
+        let msg = "Ocurrió un error al autenticar.";
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          msg = "Credenciales incorrectas. Verifica tu contraseña o regístrate si no tienes cuenta.";
+        } else if (error.code === 'auth/email-already-in-use') {
+          msg = "Este correo ya está registrado. Cambia a Iniciar Sesión.";
+        } else if (error.code === 'auth/weak-password') {
+          msg = "La contraseña es muy débil (mínimo 6 caracteres).";
+        } else if (error.code === 'auth/invalid-email') {
+          msg = "El formato del correo electrónico no es válido.";
+        } else {
+          msg = error.message; // Fallback
+        }
+        setAuthError(msg);
       }
     }
   };
