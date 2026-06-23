@@ -1,0 +1,17 @@
+{
+  "short_name": "Driver Cash",
+  "name": "Driver Cash - Inteligencia Financiera para Choferes",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512 any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0D110E",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#00E676"
+}
