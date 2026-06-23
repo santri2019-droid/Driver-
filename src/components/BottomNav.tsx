@@ -1,4 +1,6 @@
-import { Home, Landmark, BookOpen, Target, Award, DollarSign, LayoutDashboard, Settings } from "lucide-react";
+import { Home, Landmark, BookOpen, Target, Award, DollarSign, LayoutDashboard, Settings, ShieldAlert } from "lucide-react";
+import { useConfig } from "../contexts/ConfigContext";
+import { auth } from "../firebase";
 
 interface BottomNavProps {
   selectedTab: string;
@@ -12,13 +14,21 @@ export default function BottomNav({
   onRequestQuickCash 
 }: BottomNavProps) {
   
+  const { adminEmails, t } = useConfig();
+  const currentUser = auth.currentUser;
+  const isAuthorized = currentUser && adminEmails.includes(currentUser.email || "");
+  
   const navItems = [
-    { id: "home", label: "Hogar", icon: Home },
-    { id: "journal", label: "Diario", icon: BookOpen },
-    { id: "goals", label: "Objetivos", icon: Target },
-    { id: "achievements", label: "Logros", icon: Award },
-    { id: "advances", label: "Adelantos", icon: Landmark },
+    { id: "home", label: t("tab_home", "Hogar"), icon: Home },
+    { id: "journal", label: t("tab_journal", "Diario"), icon: BookOpen },
+    { id: "goals", label: t("tab_goals", "Objetivos"), icon: Target },
+    { id: "achievements", label: t("tab_achievements", "Logros"), icon: Award },
+    { id: "advances", label: t("tab_advances", "Adelantos"), icon: Landmark },
   ];
+
+  if (isAuthorized) {
+    navItems.push({ id: "admin", label: t("admin_tab", "Admin Panel"), icon: ShieldAlert });
+  }
 
   return (
     <>

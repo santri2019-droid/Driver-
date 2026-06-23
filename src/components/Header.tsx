@@ -105,7 +105,7 @@ export default function Header({
               <div className="h-6 w-[1px] bg-brand-border"></div>
               <div>
                 <span className="text-brand-on-surface-variant block text-[9px] uppercase tracking-wide">Divisa</span>
-                <span className="font-bold text-brand-primary uppercase">{currencySymbol} (ARS)</span>
+                <span className="font-bold text-brand-primary uppercase">{currencySymbol}</span>
               </div>
             </div>
 

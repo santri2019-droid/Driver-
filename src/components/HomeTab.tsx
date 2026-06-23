@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Timer, ArrowRight, Play, Square, Calendar, Flag, Settings2, HelpCircle, Car, TrendingUp, ChevronRight, CheckCircle2, User, Moon, Sun, Trash2, LogIn, ChevronDown, ChevronUp } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { DriverLog, GoalsConfig } from "../types";
+import { auth } from "../firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { useConfig } from "../contexts/ConfigContext";
 
 interface HomeTabProps {
   logs: DriverLog[];
@@ -28,26 +31,55 @@ export default function HomeTab({
   isDarkMode,
   setIsDarkMode,
 }: HomeTabProps) {
+  const { t, ts } = useConfig();
   const [showFormulaTooltip, setShowFormulaTooltip] = useState<string | null>(null);
   const [swipeProgress, setSwipeProgress] = useState(0); // for simulating slide-to-start drag
   const [isSwiping, setIsSwiping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("dc_auth_email") || "");
   const [password, setPassword] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [authError, setAuthError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     if(email && password) {
-      setIsLoggedIn(true);
+      try {
+        if (isRegisterMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+        localStorage.setItem("dc_auth_email", email);
+      } catch (error: any) {
+        setAuthError(error.message);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setPassword("");
+    } catch (error) {
+      console.error("Logout error", error);
     }
   };
 
   const handleReset = () => {
     if (window.confirm("¿Estás seguro de que deseas borrar toda tu información? Esto no se puede deshacer.")) {
       onResetAllData();
+      if (user) handleLogout();
       alert("Información reseteada.");
     }
   };
@@ -262,8 +294,8 @@ export default function HomeTab({
             </div>
             
             <div className="flex flex-col">
-              <span className="text-brand-on-surface font-bold text-lg sm:text-lg leading-tight">
-                {isShiftActive ? "¡Estás en Turno Activo!" : "Iniciar Día Laboral"}
+              <span className="text-brand-on-surface font-bold leading-tight" style={ts("home_shift_status", 18)}>
+                {isShiftActive ? t("home_shift_active", "¡Estás en Turno Activo!") : t("home_start_shift", "Iniciar Día Laboral")}
               </span>
               <span className={`text-lg font-mono shrink-0 transition-colors ${isShiftActive ? "text-brand-primary font-bold" : "text-brand-on-surface-variant"}`}>
                 {formatDuration(shiftSeconds)} transcurrido
@@ -278,10 +310,11 @@ export default function HomeTab({
                 type="button"
                 id="stop-shift-btn"
                 onClick={toggleShiftDirectly}
-                className="w-full h-11 bg-brand-error/10 hover:bg-brand-error/20 text-brand-error border border-brand-error/20 font-bold text-lg rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="w-full h-11 bg-brand-error/10 hover:bg-brand-error/20 text-brand-error border border-brand-error/20 font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
+                style={ts("home_end_shift", 18)}
               >
                 <Square className="w-4 h-4 fill-brand-error" />
-                Finalizar Turno
+                {t("home_end_shift", "Finalizar Turno")}
               </button>
             ) : (
               // Swipe to Start Slide Container
@@ -294,10 +327,10 @@ export default function HomeTab({
                 className="relative w-full h-12 bg-brand-bg-darker/60 rounded-full border border-brand-border/60 flex items-center p-1 overflow-hidden select-none cursor-pointer"
               >
                 <div 
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none text-lg font-bold text-brand-on-surface-variant uppercase tracking-wider transition-opacity"
-                  style={{ opacity: swipeProgress > 45 ? 0.2 : 1 }}
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none font-bold text-brand-on-surface-variant uppercase tracking-wider transition-opacity"
+                  style={{ opacity: swipeProgress > 45 ? 0.2 : 1, ...ts("home_swipe_start", 14) }}
                 >
-                  Desliza para arrancar
+                  {t("home_swipe_start", "Desliza para arrancar")}
                 </div>
                 
                 <div
@@ -320,7 +353,9 @@ export default function HomeTab({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-brand-primary">
                 <Flag className="w-4 h-4 text-brand-primary" />
-                <h3 className="font-bold text-lg tracking-tight text-brand-on-surface">Objetivo diario</h3>
+                <h3 className="font-bold tracking-tight text-brand-on-surface" style={ts("home_daily_goal", 18)}>
+                  {t("home_daily_goal", "Objetivo diario")}
+                </h3>
               </div>
               <p className="text-2xl font-black text-brand-on-surface">
                 {currencySymbol}{calculatedDailyMeta.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -328,21 +363,25 @@ export default function HomeTab({
             </div>
             <div className="bg-brand-container-highest/60 border border-brand-border/60 px-2.5 py-1.5 rounded-xl text-center">
               <span className="text-brand-primary font-black text-lg block leading-none">{remainingWorkingDays}</span>
-              <span className="text-[8px] text-brand-on-surface-variant uppercase tracking-tight block mt-0.5">Días hábiles rest.</span>
+              <span className="font-bold text-brand-on-surface-variant uppercase tracking-tight block mt-0.5" style={ts("home_days_left", 8)}>
+                {t("home_days_left", "Días hábiles rest.")}
+              </span>
             </div>
           </div>
           
           <div className="flex items-center gap-2 bg-brand-primary/10 text-brand-primary px-3 py-2 rounded-xl border border-brand-primary/20">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span className="text-lg font-semibold">Facturación diaria necesaria</span>
+            <span className="font-semibold" style={ts("home_daily_req", 14)}>
+              {t("home_daily_req", "Facturación diaria necesaria")}
+            </span>
           </div>
         </div>
 
         {/* Left: Margen Neto - order-2 on mobile, md:order-1 on desktop */}
         <div id="margen-neto-real" className="order-2 md:order-1 bg-gradient-to-br from-brand-container to-brand-bg border border-brand-border border-t-2 border-t-brand-primary rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col items-center justify-center text-center gap-2">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none"></div>
-          <span className="font-semibold text-lg text-brand-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
-            Margen Neto
+          <span className="font-semibold text-brand-on-surface-variant uppercase tracking-widest flex items-center gap-1.5" style={ts("home_net_margin", 14)}>
+            {t("home_net_margin", "Margen Neto")}
             <HelpCircle 
               className="w-3.5 h-3.5 text-brand-on-surface-variant/40 hover:text-brand-on-surface cursor-pointer"
               onClick={() => setShowFormulaTooltip(showFormulaTooltip === "verdad" ? null : "verdad")} 
@@ -351,9 +390,11 @@ export default function HomeTab({
 
           {showFormulaTooltip === "verdad" && (
             <div className="bg-brand-container-highest border border-brand-border rounded-xl p-3 text-lg text-left max-w-sm mt-1 animate-fade-in absolute z-20">
-              <p className="font-bold text-brand-on-surface mb-1">Margen Neto Mensual:</p>
-              <p className="text-brand-on-surface-variant leading-relaxed mb-2">
-                Fórmula: Facturación - Gastos Fijos Mensuales. Se muestra en negativo hasta cubrir los gastos.
+              <p className="font-bold text-brand-on-surface mb-1" style={ts("home_tooltip_net_margin", 14)}>
+                {t("home_tooltip_net_margin", "Margen Neto Mensual:")}
+              </p>
+              <p className="text-brand-on-surface-variant leading-relaxed mb-2" style={ts("home_tooltip_formula", 12)}>
+                {t("home_tooltip_formula", "Fórmula: Facturación - Gastos Fijos Mensuales. Se muestra en negativo hasta cubrir los gastos.")}
               </p>
             </div>
           )}
@@ -364,7 +405,9 @@ export default function HomeTab({
 
           {/* Nueva sección de Facturación */}
           <div className="flex flex-col items-center justify-center mt-3 pt-3 border-t border-brand-border/40 w-full relative z-10">
-            <span className="text-[10px] font-bold text-brand-on-surface-variant uppercase tracking-widest">Facturación Total Mensual</span>
+            <span className="font-bold text-brand-on-surface-variant uppercase tracking-widest" style={ts("home_total_billing", 10)}>
+              {t("home_total_billing", "Facturación Total Mensual")}
+            </span>
             <span className="text-[38px] md:text-5xl font-extrabold text-brand-primary mt-1">
               {currencySymbol}{totalFacturacion.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </span>
@@ -376,8 +419,8 @@ export default function HomeTab({
           
           {/* Left: Donut Chart */}
           <div className="flex flex-col items-center justify-center gap-2">
-            <span className="font-semibold text-[10px] md:text-xs text-brand-on-surface-variant uppercase tracking-widest text-center animate-pulse">
-              Facturacion
+            <span className="font-semibold text-brand-on-surface-variant uppercase tracking-widest text-center animate-pulse" style={ts("home_billing", 11)}>
+              {t("home_billing", "Facturacion")}
             </span>
             <div className="relative w-16 h-16 md:w-20 md:h-20">
               <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
@@ -400,7 +443,9 @@ export default function HomeTab({
                 <span className="text-xs font-bold text-brand-on-surface">{Math.round((totalMonthlyNet / Math.max(1, goals.monthlyGoal)) * 100)}%</span>
               </div>
             </div>
-            <span className="text-[11px] text-brand-on-surface-variant">Meta: {currencySymbol}{goals.monthlyGoal}</span>
+            <span className="text-brand-on-surface-variant" style={ts("home_goal_label", 11)}>
+              {t("home_goal_label", "Meta: ")}{currencySymbol}{goals.monthlyGoal}
+            </span>
           </div>
 
           {/* Right: KMS Counter */}
@@ -409,7 +454,9 @@ export default function HomeTab({
               <div className="bg-[#0A0D0B] p-1.5 rounded border border-brand-border/40">
                 <Car className="w-4 h-4 text-brand-primary" />
               </div>
-              <span className="text-xs font-medium text-brand-on-surface">Kms mes</span>
+              <span className="font-medium text-brand-on-surface" style={ts("home_kms_month", 12)}>
+                {t("home_kms_month", "Kms mes")}
+              </span>
             </div>
             <div className="bg-[#0A0D0B] border border-brand-border/40 rounded-xl px-6 py-2.5 min-w-[90px] flex items-center justify-center">
               <span className="text-3xl md:text-4xl font-extrabold text-brand-primary tracking-tighter">
@@ -427,15 +474,17 @@ export default function HomeTab({
       {/* Progress Bars: Budget of Monthly Expenses */}
       <section id="presupuesto-mensual" className="bg-brand-container border border-brand-border rounded-2xl p-5 space-y-4">
         <div className="space-y-0.5">
-          <h3 className="font-bold text-lg md:text-lg text-brand-on-surface">Combustible mes</h3>
+          <h3 className="font-bold text-brand-on-surface" style={ts("home_fuel_month", 18)}>
+            {t("home_fuel_month", "Combustible mes")}
+          </h3>
         </div>
 
         <div className="space-y-4 pt-1">
           {/* Progress Item 1: Combustible Presupuestado */}
           <div>
             <div className="flex justify-between items-end mb-1.5">
-              <span className="font-semibold text-brand-primary flex items-center gap-1.5 text-xs uppercase tracking-wider">
-                Presupuesto
+              <span className="font-semibold text-brand-primary flex items-center gap-1.5 uppercase tracking-wider" style={ts("home_budget", 12)}>
+                {t("home_budget", "Presupuesto")}
               </span>
               <span className="font-mono text-brand-primary text-xs">
                 {currencySymbol}{(goals.monthlyFuelAverage || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {currencySymbol}{(800000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -453,8 +502,8 @@ export default function HomeTab({
           {/* Progress Item 2: Combustible Consumido (Diario) */}
           <div className="pt-2">
             <div className="flex justify-between items-end mb-1.5">
-              <span className="font-semibold text-white flex items-center gap-1.5 text-xs uppercase tracking-wider">
-                Gastado
+              <span className="font-semibold text-white flex items-center gap-1.5 uppercase tracking-wider" style={ts("home_spent", 12)}>
+                {t("home_spent", "Gastado")}
               </span>
               <span className="font-mono text-white text-xs">
                 {currencySymbol}{currentLogsFuelSumScaled.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {currencySymbol}{(800000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -483,7 +532,9 @@ export default function HomeTab({
         >
           <div className="flex items-center gap-3">
             <TrendingUp className="w-5 h-5 text-brand-primary" />
-            <span className="font-bold text-brand-on-surface">Ver Histórico de Métricas</span>
+            <span className="font-bold text-brand-on-surface" style={ts("home_view_history", 16)}>
+              {t("home_view_history", "Ver Histórico de Métricas")}
+            </span>
           </div>
           {showHistory ? <ChevronUp className="w-5 h-5 text-brand-on-surface-variant" /> : <ChevronDown className="w-5 h-5 text-brand-on-surface-variant" />}
         </button>
@@ -501,40 +552,52 @@ export default function HomeTab({
 
         {/* AJUSTES */}
         <div className="space-y-4 pt-4">
-          <h2 className="text-xl md:text-2xl font-black text-brand-on-surface">Ajustes</h2>
+          <h2 className="font-black text-brand-on-surface" style={ts("home_settings_title", 24)}>
+            {t("home_settings_title", "Ajustes")}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Auth Module */}
             <section className="bg-brand-container border border-brand-border rounded-2xl p-5 shadow-lg space-y-4">
               <div className="flex items-center gap-2 border-b border-brand-border/40 pb-2">
                 <User className="w-5 h-5 text-brand-primary" />
-                <h3 className="font-bold text-sm text-brand-on-surface">Cuenta y Sincronización</h3>
+                <h3 className="font-bold text-brand-on-surface" style={ts("home_stats_title", 14)}>
+                  {t("home_stats_title", "Cuenta y Sincronización")}
+                </h3>
               </div>
               
-              {isLoggedIn ? (
-                <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-xl text-sm font-semibold">
-                  Conectado como {email}
-                  <button onClick={() => setIsLoggedIn(false)} className="ml-4 underline text-xs">Cerrar Sesión</button>
+              {user ? (
+                <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-xl font-semibold flex items-center justify-between">
+                  <span style={ts("home_logged_in_as", 14)}>{t("home_logged_in_as", "Conectado como ")} {user.email}</span>
+                  <button onClick={handleLogout} className="underline cursor-pointer" style={ts("home_logout", 12)}>
+                    {t("home_logout", "Cerrar Sesión")}
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleLogin} className="space-y-3">
+                  {authError && <div className="text-xs text-brand-error font-bold">{authError}</div>}
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-brand-on-surface-variant uppercase">Correo Electrónico</label>
+                    <label className="font-semibold text-brand-on-surface-variant uppercase" style={ts("home_email_label", 11)}>
+                      {t("home_email_label", "Correo Electrónico")}
+                    </label>
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:border-brand-primary outline-none" required />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-brand-on-surface-variant uppercase">Contraseña</label>
+                    <label className="font-semibold text-brand-on-surface-variant uppercase" style={ts("home_password_label", 11)}>
+                      {t("home_password_label", "Contraseña")}
+                    </label>
                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:border-brand-primary outline-none" required />
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <button 
                       type="button" 
                       onClick={() => setIsRegisterMode(!isRegisterMode)}
-                      className="text-xs text-brand-primary hover:underline"
+                      className="text-brand-primary hover:underline"
+                      style={ts("home_already_have_account", 12)}
                     >
-                      {isRegisterMode ? "¿Ya tienes cuenta? Inicia Sesión" : "¿No tienes cuenta? Regístrate"}
+                      {isRegisterMode ? t("home_already_have_account", "¿Ya tienes cuenta? Inicia Sesión") : t("home_no_account", "¿No tienes cuenta? Regístrate")}
                     </button>
-                    <button type="submit" className="bg-brand-primary text-black font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-sm hover:brightness-110">
-                      <LogIn className="w-4 h-4" /> {isRegisterMode ? "Crear Cuenta" : "Iniciar Sesión"}
+                    <button type="submit" className="bg-brand-primary text-black font-bold px-4 py-2 rounded-lg flex items-center gap-2 hover:brightness-110" style={ts("home_login", 14)}>
+                      <LogIn className="w-4 h-4" /> {isRegisterMode ? t("home_create_account", "Crear Cuenta") : t("home_login", "Iniciar Sesión")}
                     </button>
                   </div>
                 </form>
@@ -545,11 +608,13 @@ export default function HomeTab({
               {/* Appearance Module */}
               <section className="bg-brand-container border border-brand-border rounded-2xl p-5 shadow-lg space-y-4 flex items-center justify-between">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-brand-on-surface flex items-center gap-2">
+                  <h3 className="font-bold text-brand-on-surface flex items-center gap-2" style={ts("home_visual_mode", 14)}>
                     {isDarkMode ? <Moon className="w-4 h-4 text-brand-primary"/> : <Sun className="w-4 h-4 text-brand-primary"/>}
-                    Modo Visual
+                    {t("home_visual_mode", "Modo Visual")}
                   </h3>
-                  <p className="text-xs text-brand-on-surface-variant">Alternar entre modo Noche y Día</p>
+                  <p className="text-brand-on-surface-variant" style={ts("home_visual_mode_desc", 12)}>
+                    {t("home_visual_mode_desc", "Alternar entre modo Noche y Día")}
+                  </p>
                 </div>
                 <button 
                   onClick={() => setIsDarkMode(!isDarkMode)}
@@ -562,14 +627,20 @@ export default function HomeTab({
               {/* Danger Zone */}
               <section className="bg-brand-error/5 border border-brand-error/20 rounded-2xl p-5 shadow-lg space-y-4">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-brand-error flex items-center gap-2">
+                  <h3 className="font-bold text-brand-error flex items-center gap-2" style={ts("home_danger_zone", 14)}>
                     <Trash2 className="w-4 h-4" />
-                    Zona de Peligro
+                    {t("home_danger_zone", "Zona de Peligro")}
                   </h3>
-                  <p className="text-xs text-brand-on-surface-variant">Borra toda tu información registrada y vuelve a cero.</p>
+                  <p className="text-brand-on-surface-variant" style={ts("home_danger_zone_desc", 12)}>
+                    {t("home_danger_zone_desc", "Borra toda tu información registrada y vuelve a cero.")}
+                  </p>
                 </div>
-                <button onClick={handleReset} className="w-full bg-brand-error/10 text-brand-error border border-brand-error/30 hover:bg-brand-error/20 hover:border-brand-error font-bold py-3 rounded-xl text-sm transition-all">
-                  Resetear Información
+                <button 
+                  onClick={handleReset} 
+                  className="w-full bg-brand-error/10 text-brand-error border border-brand-error/30 hover:bg-brand-error/20 hover:border-brand-error font-bold py-3 rounded-xl transition-all"
+                  style={ts("home_reset_info", 14)}
+                >
+                  {t("home_reset_info", "Resetear Información")}
                 </button>
               </section>
             </div>

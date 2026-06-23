@@ -3,14 +3,10 @@
   "name": "Driver Cash - Inteligencia Financiera para Choferes",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/icon.svg",
       "type": "image/svg+xml",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/vite.svg",
-      "type": "image/svg+xml",
-      "sizes": "512x512"
+      "sizes": "192x192 512x512 any",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",

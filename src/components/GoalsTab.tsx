@@ -37,7 +37,7 @@ export default function GoalsTab({
   const [successBanner, setSuccessBanner] = useState(false);
 
   // Fuel spent
-  const totalFuelSpent = logs.reduce((sum, log) => sum + (log.fuelExpense || 0), 0);
+  const totalFuelSpent = (logs || []).reduce((sum, log) => sum + (log.fuelExpense || 0), 0);
   const remainingFuel = Number(lclFuelAverage) - totalFuelSpent;
 
   // Form handle submission
