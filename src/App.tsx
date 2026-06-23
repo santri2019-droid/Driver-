@@ -7,6 +7,7 @@ import JournalTab from "./components/JournalTab";
 import GoalsTab from "./components/GoalsTab";
 import AchievementsTab from "./components/AchievementsTab";
 import OnboardingWizard from "./components/OnboardingWizard";
+import AdminPanel from "./components/AdminPanel";
 
 import { 
   initialLogs, 
@@ -15,10 +16,14 @@ import {
   INITIAL_ACHIEVEMENTS 
 } from "./data";
 import { DriverLog, GoalsConfig, Advance, Achievement } from "./types";
+import { auth, db } from "./firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function App() {
   // Navigation
   const [selectedTab, setSelectedTab] = useState<string>("home");
+  const [user, setUser] = useState<User | null>(null);
 
   // Profile configurations with persistent fallback
   const [driverName, setDriverName] = useState<string>(() => {
@@ -31,7 +36,11 @@ export default function App() {
     return localStorage.getItem("dc_avatarUrl") || "https://lh3.googleusercontent.com/aida-public/AB6AXuBcL-6O-RUAJQq_YWM3Hg01FEEAFziwCNorVtfdNXYKTNgI0Jrc0vGZVE8sbvEWUtUiK4VyPnUY2ItlesODy6eev2S4pPNJoR8Sq55BaZ7_e1OYQAE2c96PlvFdR5dBpjyTTo5YocSSYibDbYg89HuPCJMeK6wGyd9yP0EiMeNTKP0ZNcmYO5FcYrCxxKaEgMZzj3RmVE8HXSvZMHCyrA7qNK_C-7L2FrAuL-oSdtKCtSPn0WZCZKe2_souEyEE0KN0wdrlQ3PVOQ";
   });
   const [currencySymbol, setCurrencySymbol] = useState<string>(() => {
-    return localStorage.getItem("dc_currencySymbol") || "$(ARS)";
+    const saved = localStorage.getItem("dc_currencySymbol");
+    if (saved === "$(ARS)") {
+      return "$";
+    }
+    return saved || "$";
   });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return localStorage.getItem("dc_darkMode") !== "false";
@@ -153,6 +162,58 @@ export default function App() {
     localStorage.setItem("dc_onboarded", hasOnboarded ? "true" : "false");
   }, [hasOnboarded]);
 
+  // Firebase Auth & Initial Fetch
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        try {
+          const docRef = doc(db, "users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.driverName) setDriverName(data.driverName);
+            if (data.carModel) setCarModel(data.carModel);
+            if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
+            if (data.currencySymbol) setCurrencySymbol(data.currencySymbol);
+            if (data.isDarkMode !== undefined) setIsDarkMode(data.isDarkMode);
+            if (data.hasOnboarded !== undefined) setHasOnboarded(data.hasOnboarded);
+            if (data.logs) setLogs(data.logs);
+            if (data.goals) setGoals(data.goals);
+            if (data.advances) setAdvances(data.advances);
+          }
+        } catch (e) {
+          console.error("Error fetching data from Firestore", e);
+        }
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Firebase Auto-Sync (Debounced)
+  useEffect(() => {
+    if (!user) return;
+    const syncData = async () => {
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          driverName, 
+          carModel, 
+          avatarUrl, 
+          currencySymbol, 
+          isDarkMode, 
+          hasOnboarded, 
+          logs, 
+          goals, 
+          advances
+        }, { merge: true });
+      } catch (e) {
+        console.error("Error syncing to Firestore", e);
+      }
+    };
+    const timeout = setTimeout(syncData, 2000);
+    return () => clearTimeout(timeout);
+  }, [driverName, carModel, avatarUrl, currencySymbol, isDarkMode, hasOnboarded, logs, goals, advances, user]);
+
   // Stopwatch Interval countdown ticking loop
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -175,7 +236,7 @@ export default function App() {
     setAdvances(INITIAL_ADVANCES);
     setDriverName("Carlos Martínez");
     setCarModel("Chevrolet Prisma 1.4");
-    setCurrencySymbol("$(ARS)");
+    setCurrencySymbol("$");
     setShiftSeconds(0);
     setIsShiftActive(false);
     setIsDarkMode(true);
@@ -278,6 +339,7 @@ export default function App() {
 
           {selectedTab === "goals" && (
             <GoalsTab
+              logs={logs}
               goals={goals}
               setGoals={setGoals}
               currencySymbol={currencySymbol}
@@ -291,6 +353,10 @@ export default function App() {
               achievements={INITIAL_ACHIEVEMENTS}
               currencySymbol={currencySymbol}
             />
+          )}
+
+          {selectedTab === "admin" && (
+            <AdminPanel />
           )}
         </main>
       </div>

@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { Target, Settings, Shield, Wrench, PiggyBank, Check, RefreshCw } from "lucide-react";
-import { GoalsConfig } from "../types";
+import { DriverLog, GoalsConfig } from "../types";
 
 interface GoalsTabProps {
+  logs: DriverLog[];
   goals: GoalsConfig;
   setGoals: (goals: GoalsConfig) => void;
   currencySymbol: string;
 }
 
 export default function GoalsTab({
+  logs,
   goals,
   setGoals,
   currencySymbol,
@@ -33,6 +35,10 @@ export default function GoalsTab({
   const [lclReserve, setLclReserve] = useState(goals.reserveFundMonthly);
   
   const [successBanner, setSuccessBanner] = useState(false);
+
+  // Fuel spent
+  const totalFuelSpent = logs.reduce((sum, log) => sum + (log.fuelExpense || 0), 0);
+  const remainingFuel = Number(lclFuelAverage) - totalFuelSpent;
 
   // Form handle submission
   const handleSubmitGoals = (e: React.FormEvent) => {
@@ -177,9 +183,14 @@ export default function GoalsTab({
 
             {/* Combustible promedio mensual */}
             <div className="space-y-1">
-              <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-                Combustible Promedio Mensual ({currencySymbol} / Mes)
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
+                  Combustible Promedio Mensual ({currencySymbol} / Mes)
+                </label>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${remainingFuel < 0 ? 'bg-brand-error/10 text-brand-error' : 'bg-brand-primary/10 text-brand-primary'}`}>
+                  Restan: {currencySymbol}{remainingFuel.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
               <input
                 type="number"
                 value={lclFuelAverage}
