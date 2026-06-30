@@ -2,18 +2,18 @@ import { Home, Landmark, BookOpen, Target, Award, DollarSign, LayoutDashboard, S
 import { useConfig } from "../contexts/ConfigContext";
 import { auth } from "../firebase";
 
-interface BottomNavProps {
-  selectedTab: string;
-  setSelectedTab: (tab: string) => void;
-  onRequestQuickCash: () => void;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function BottomNav({ 
-  selectedTab, 
-  setSelectedTab,
-  onRequestQuickCash 
-}: BottomNavProps) {
-  
+export default function BottomNav() {
+  const { selectedTab, setSelectedTab } = useAppStore();
+
+  const onRequestQuickCash = () => {
+    setSelectedTab("advances");
+    setTimeout(() => {
+      const formInput = document.querySelector('input[type="number"]');
+      if (formInput) (formInput as HTMLInputElement).focus();
+    }, 150);
+  };
   const { adminEmails, t } = useConfig();
   const currentUser = auth.currentUser;
   const isAuthorized = currentUser && adminEmails.includes(currentUser.email || "");

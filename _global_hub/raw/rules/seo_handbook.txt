@@ -1,0 +1,20 @@
+# Manual Maestro: SEO para Mercado Libre (Método Arranz)
+
+Esta metodología está diseñada para maximizar el tráfico orgánico capturando búsquedas transaccionales y de intención.
+
+## 1. Reglas de Oro para Títulos
+*   **Límite:** 60 caracteres exactos (incluyendo espacios).
+*   **Fórmula Ganadora:** `[Producto Base] + [Marca] + [Modelo/Modelo] + [Atributo Distintivo / Long Tail]`.
+*   **Poda de Relleno:** Eliminar adjetivos subjetivos ("hermoso", "increíble"), palabras promocionales ("envío gratis", "oferta") y preposiciones ("de", "para").
+*   **Palabras Clave (Keywords):**
+    *   *Short Tail:* El nombre genérico con más volumen.
+    *   *Mid/Long Tail:* Diferenciales técnicos o de uso (ej. "Para regalo", "Larga duración", "Sin humo").
+
+## 2. Optimización de Ficha Técnica
+*   Completar el 100% de los atributos obligatorios y opcionales.
+*   El **Código Universal (EAN/UPC)** es el ancla técnica indispensable para ganar exposición y entrar en el Catálogo/BuyBox.
+
+## 3. Jerarquía Visual para CTR
+1.  **Foto 1:** Fondo blanco puro (RGB 255,255,255), producto centrado, sin sombras excesivas ni marcas de agua.
+2.  **Fotos Lifestyle:** Mostrar el producto en contexto de uso para generar deseo.
+3.  **Foto de Escala:** El producto junto a un objeto de referencia para evitar reclamos por tamaño.

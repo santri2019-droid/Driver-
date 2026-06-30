@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Cash - Adelantos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card {
+            background: rgba(0, 43, 82, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        body {
+            background-color: #111415;
+            color: #e1e3e4;
+            font-family: 'Manrope', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#e1e3e4",
+                    "surface-dim": "#111415",
+                    "on-primary-fixed": "#001c3b",
+                    "surface": "#111415",
+                    "tertiary": "#c6c6c7",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "inverse-surface": "#e1e3e4",
+                    "primary-fixed-dim": "#b0c8f0",
+                    "secondary-container": "#02c953",
+                    "secondary": "#40e56c",
+                    "surface-container-high": "#272a2c",
+                    "outline-variant": "#44474e",
+                    "on-surface-variant": "#c4c6cf",
+                    "on-tertiary": "#2f3131",
+                    "on-secondary-container": "#004d1b",
+                    "primary-fixed": "#d5e3ff",
+                    "inverse-primary": "#485f83",
+                    "error-container": "#93000a",
+                    "tertiary-container": "#1b1d1d",
+                    "error": "#ffb4ab",
+                    "primary-container": "#001d3d",
+                    "on-primary-fixed-variant": "#30486a",
+                    "on-primary": "#183152",
+                    "surface-container-low": "#191c1d",
+                    "surface-bright": "#363a3b",
+                    "on-background": "#e1e3e4",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "primary": "#b0c8f0",
+                    "error-red": "#FF5252",
+                    "on-secondary-fixed-variant": "#00531e",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#69ff87",
+                    "surface-elevated": "#002B52",
+                    "outline": "#8e9198",
+                    "secondary-fixed-dim": "#3ce36a",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-container": "#6f86ab",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "background": "#111415",
+                    "surface-tint": "#b0c8f0",
+                    "success-glow": "rgba(0, 200, 83, 0.15)",
+                    "inverse-on-surface": "#2e3132",
+                    "surface-variant": "#323536",
+                    "on-tertiary-container": "#848585",
+                    "on-secondary-fixed": "#002108",
+                    "on-secondary": "#003912",
+                    "surface-container-lowest": "#0b0f10",
+                    "surface-container-highest": "#323536",
+                    "surface-container": "#1d2021"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "20px",
+                    "base": "8px",
+                    "stack-md": "24px",
+                    "stack-lg": "40px",
+                    "stack-sm": "12px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "numeric-xl": ["Hanken Grotesk"],
+                    "body-md": ["Manrope"],
+                    "label-sm": ["Manrope"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "label-md": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "headline-lg-mobile": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "numeric-xl": ["40px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface sticky top-0 z-50 flex justify-between items-center w-full px-container-padding py-base max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-surface-variant p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md text-primary tracking-tight">Driver Cash</h1>
+</div>
+<button class="text-primary hover:bg-surface-variant p-2 rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</header>
+<main class="max-w-md mx-auto px-container-padding pt-stack-md">
+<!-- Progress Indicator -->
+<div class="flex justify-between items-center mb-stack-md px-2">
+<div class="w-1/3 h-1.5 rounded-full bg-secondary duration-300" id="step-dot-1"></div>
+<div class="w-1/3 h-1.5 rounded-full bg-surface-container-highest mx-2 duration-300" id="step-dot-2"></div>
+<div class="w-1/3 h-1.5 rounded-full bg-surface-container-highest duration-300" id="step-dot-3"></div>
+</div>
+<!-- Step 1: Selection -->
+<section class="step-transition opacity-100 block" id="step-1">
+<header class="mb-stack-md">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Solicitar Adelanto</h2>
+<p class="font-body-md text-on-surface-variant">Tus ganancias acumuladas listas para retirar.</p>
+</header>
+<!-- Available Balance Card -->
+<div class="glass-card rounded-xl p-stack-md mb-stack-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-[80px]">payments</span>
+</div>
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-widest mb-1">Disponible ahora</p>
+<div class="flex items-baseline gap-2">
+<span class="font-numeric-xl text-numeric-xl text-on-surface">$1,450.00</span>
+<span class="font-label-md text-label-md text-on-surface-variant">MXN</span>
+</div>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-label-sm font-label-sm">Actualizado hace 5 min</span>
+</div>
+</div>
+<!-- Amount Input -->
+<div class="mb-stack-lg">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-base">¿Cuánto necesitas adelantar?</label>
+<div class="relative group">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-headline-md text-headline-md text-secondary">$</span>
+<input class="w-full bg-surface-container border-2 border-transparent focus:border-secondary rounded-xl py-5 pl-10 pr-4 font-numeric-xl text-numeric-xl text-on-surface focus:ring-0 transition-all outline-none" id="cash-amount" placeholder="0.00" type="number" value="500"/>
+</div>
+<div class="flex justify-between mt-base px-1">
+<button class="font-label-sm text-label-sm py-2 px-4 rounded-full bg-surface-container-high border border-white/5 hover:bg-surface-variant transition-colors" onclick="setAmount(200)">+$200</button>
+<button class="font-label-sm text-label-sm py-2 px-4 rounded-full bg-surface-container-high border border-white/5 hover:bg-surface-variant transition-colors" onclick="setAmount(500)">+$500</button>
+<button class="font-label-sm text-label-sm py-2 px-4 rounded-full bg-surface-container-high border border-white/5 hover:bg-surface-variant transition-colors" onclick="setAmount(1000)">Todo</button>
+</div>
+</div>
+<button class="w-full py-4 bg-secondary-container hover:bg-secondary text-on-secondary-container font-headline-md rounded-xl transition-all active:scale-95 shadow-lg shadow-success-glow" onclick="goToStep(2)">
+                Continuar
+            </button>
+</section>
+<!-- Step 2: Commission & Summary -->
+<section class="step-transition opacity-0 hidden transform translate-y-4" id="step-2">
+<button class="flex items-center gap-2 text-primary font-label-md mb-stack-md" onclick="goToStep(1)">
+<span class="material-symbols-outlined text-sm">arrow_back_ios</span>
+                Modificar monto
+            </button>
+<header class="mb-stack-md">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Desglose del Adelanto</h2>
+<p class="font-body-md text-on-surface-variant">Revisa los detalles antes de confirmar.</p>
+</header>
+<div class="bg-surface-container rounded-xl p-stack-md space-y-gutter border border-white/5">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Monto solicitado</span>
+<span class="font-label-md text-label-md text-on-surface" id="summary-amount">$500.00</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Comisión de servicio</span>
+<span class="material-symbols-outlined text-sm text-primary cursor-help">info</span>
+</div>
+<span class="font-label-md text-label-md text-error-red">-$25.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">IVA (16%)</span>
+<span class="font-label-md text-label-md text-error-red">-$4.00</span>
+</div>
+<div class="pt-gutter border-t border-white/10 flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-on-surface">Total a recibir</span>
+<span class="font-numeric-xl text-numeric-xl text-secondary" id="summary-total">$471.00</span>
+</div>
+</div>
+<div class="mt-stack-lg p-stack-sm bg-surface-container-low rounded-lg border-l-4 border-secondary flex gap-3">
+<span class="material-symbols-outlined text-secondary">security</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Esta transacción es segura y se depositará instantáneamente en tu cuenta vinculada.</p>
+</div>
+<button class="w-full mt-stack-lg py-4 bg-secondary-container hover:bg-secondary text-on-secondary-container font-headline-md rounded-xl transition-all active:scale-95 shadow-lg shadow-success-glow" onclick="goToStep(3)">
+                Confirmar Adelanto
+            </button>
+</section>
+<!-- Step 3: Success -->
+<section class="step-transition opacity-0 hidden transform scale-95 flex flex-col items-center text-center py-stack-lg" id="step-3">
+<div class="w-24 h-24 bg-secondary-container rounded-full flex items-center justify-center mb-stack-lg animate-bounce">
+<span class="material-symbols-outlined text-5xl text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm">¡Solicitud Exitosa!</h2>
+<p class="font-body-md text-on-surface-variant mb-stack-lg px-8">
+                Tus fondos están siendo procesados. Recibirás una notificación en cuanto el depósito se complete.
+            </p>
+<div class="w-full glass-card rounded-xl p-stack-md mb-stack-lg text-left">
+<div class="flex justify-between items-center mb-base">
+<span class="text-label-sm text-on-surface-variant">Referencia</span>
+<span class="font-label-md text-on-surface">#DC-982341</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-sm text-on-surface-variant">Destino</span>
+<span class="font-label-md text-on-surface">Banca Personal ****8291</span>
+</div>
+</div>
+<button class="w-full py-4 bg-surface-container-highest text-on-surface font-label-md rounded-xl transition-all active:scale-95" onclick="window.location.reload()">
+                Volver al Inicio
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-high z-50 rounded-t-xl shadow-lg border-t border-white/10">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-secondary/80 transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-secondary/80 transition-all" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Gestión</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary font-bold scale-110" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-sm text-label-sm">Adelantos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-secondary/80 transition-all" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm">Métricas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-secondary/80 transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</a>
+</nav>
+<script>
+        function goToStep(step) {
+            ['step-1', 'step-2', 'step-3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden', 'opacity-0');
+                el.classList.remove('block', 'opacity-100');
+            });
+
+            const activeEl = document.getElementById(`step-${step}`);
+            activeEl.classList.remove('hidden');
+            setTimeout(() => {
+                activeEl.classList.add('block', 'opacity-100');
+            }, 50);
+
+            for(let i=1; i<=3; i++) {
+                const dot = document.getElementById(`step-dot-${i}`);
+                if (i <= step) {
+                    dot.classList.add('bg-secondary');
+                    dot.classList.remove('bg-surface-container-highest');
+                } else {
+                    dot.classList.remove('bg-secondary');
+                    dot.classList.add('bg-surface-container-highest');
+                }
+            }
+
+            if (step === 2) {
+                const amt = parseFloat(document.getElementById('cash-amount').value || 0);
+                const commission = amt * 0.05;
+                const iva = commission * 0.16;
+                const total = amt - commission - iva;
+
+                document.getElementById('summary-amount').innerText = `$${amt.toFixed(2)}`;
+                document.getElementById('summary-total').innerText = `$${total.toFixed(2)}`;
+            }
+        }
+
+        function setAmount(val) {
+            const input = document.getElementById('cash-amount');
+            if (val === 1000) {
+                input.value = 1450.00;
+            } else {
+                input.value = val;
+            }
+        }
+    </script>
+</body></html>

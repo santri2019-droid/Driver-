@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Car, User, Target, Calendar, Fuel, Shield, ArrowRight } from "lucide-react";
 
-interface OnboardingWizardProps {
-  onComplete: (name: string, model: string, goal: number, days: number, seguro: number, patente: number, fuel: number) => void;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+export default function OnboardingWizard() {
+  const { setDriverName, setCarModel, goals, setGoals, setHasOnboarded } = useAppStore();
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
@@ -18,15 +17,17 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const handleNext = () => setStep(prev => prev + 1);
 
   const handleComplete = () => {
-    onComplete(
-      name || "Conductor", 
-      model || "Vehículo", 
-      goal || 1500000, 
-      days || 24, 
-      seguro || 50000, 
-      patente || 25000, 
-      fuel || 35000
-    );
+    setDriverName(name || "Conductor");
+    setCarModel(model || "Vehículo");
+    setGoals({
+      ...goals,
+      monthlyGoal: goal || 1500000,
+      workingDaysPerMonth: days || 24,
+      monthlySeguro: seguro || 0,
+      monthlyPatente: patente || 0,
+      monthlyFuelAverage: fuel || 0,
+    });
+    setHasOnboarded(true);
   };
 
   return (

@@ -2,19 +2,10 @@ import React, { useState } from "react";
 import { Target, Settings, Shield, Wrench, PiggyBank, Check, RefreshCw } from "lucide-react";
 import { DriverLog, GoalsConfig } from "../types";
 
-interface GoalsTabProps {
-  logs: DriverLog[];
-  goals: GoalsConfig;
-  setGoals: (goals: GoalsConfig) => void;
-  currencySymbol: string;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function GoalsTab({
-  logs,
-  goals,
-  setGoals,
-  currencySymbol,
-}: GoalsTabProps) {
+export default function GoalsTab() {
+  const { logs, goals, setGoals, currencySymbol } = useAppStore();
   // Local form state
   const [lclGoal, setLclGoal] = useState(goals.monthlyGoal);
   const [lclDays, setLclDays] = useState(goals.workingDaysPerMonth);

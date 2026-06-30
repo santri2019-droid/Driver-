@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Cash - Dashboard de Métricas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #111415;
+            color: #e1e3e4;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(64, 229, 108, 0.15) 0%, rgba(64, 229, 108, 0) 100%);
+        }
+        .bento-card {
+            background: #1d2021;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #44474e;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-surface": "#e1e3e4",
+                "surface-dim": "#111415",
+                "on-primary-fixed": "#001c3b",
+                "surface": "#111415",
+                "tertiary": "#c6c6c7",
+                "on-tertiary-fixed-variant": "#454747",
+                "inverse-surface": "#e1e3e4",
+                "primary-fixed-dim": "#b0c8f0",
+                "secondary-container": "#02c953",
+                "secondary": "#40e56c",
+                "surface-container-high": "#272a2c",
+                "outline-variant": "#44474e",
+                "on-surface-variant": "#c4c6cf",
+                "on-tertiary": "#2f3131",
+                "on-secondary-container": "#004d1b",
+                "primary-fixed": "#d5e3ff",
+                "inverse-primary": "#485f83",
+                "error-container": "#93000a",
+                "tertiary-container": "#1b1d1d",
+                "error": "#ffb4ab",
+                "primary-container": "#001d3d",
+                "on-primary-fixed-variant": "#30486a",
+                "on-primary": "#183152",
+                "surface-container-low": "#191c1d",
+                "surface-bright": "#363a3b",
+                "on-background": "#e1e3e4",
+                "tertiary-fixed": "#e2e2e2",
+                "on-tertiary-fixed": "#1a1c1c",
+                "primary": "#b0c8f0",
+                "error-red": "#FF5252",
+                "on-secondary-fixed-variant": "#00531e",
+                "on-error": "#690005",
+                "secondary-fixed": "#69ff87",
+                "surface-elevated": "#002B52",
+                "outline": "#8e9198",
+                "secondary-fixed-dim": "#3ce36a",
+                "on-error-container": "#ffdad6",
+                "on-primary-container": "#6f86ab",
+                "tertiary-fixed-dim": "#c6c6c7",
+                "background": "#111415",
+                "surface-tint": "#b0c8f0",
+                "success-glow": "rgba(0, 200, 83, 0.15)",
+                "inverse-on-surface": "#2e3132",
+                "surface-variant": "#323536",
+                "on-tertiary-container": "#848585",
+                "on-secondary-fixed": "#002108",
+                "on-secondary": "#003912",
+                "surface-container-lowest": "#0b0f10",
+                "surface-container-highest": "#323536",
+                "surface-container": "#1d2021"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "container-padding": "20px",
+                "base": "8px",
+                "stack-md": "24px",
+                "stack-lg": "40px",
+                "stack-sm": "12px",
+                "gutter": "16px"
+            },
+            "fontFamily": {
+                "display-lg": ["Hanken Grotesk"],
+                "headline-lg": ["Hanken Grotesk"],
+                "numeric-xl": ["Hanken Grotesk"],
+                "body-md": ["Manrope"],
+                "label-sm": ["Manrope"],
+                "headline-md": ["Hanken Grotesk"],
+                "label-md": ["Manrope"],
+                "body-lg": ["Manrope"],
+                "headline-lg-mobile": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                "numeric-xl": ["40px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface pb-24">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 z-50 bg-surface dark:bg-surface sticky">
+<div class="flex justify-between items-center w-full px-container-padding py-base max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-variant dark:hover:bg-surface-variant transition-all active:opacity-80 active:scale-95">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md text-primary dark:text-primary tracking-tight">Driver Cash</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-variant transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="Juan Pérez" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiJ4NxMOcOQbmdBtFem76gBDK3F8I3TSxpuhQ54kg3hLttfar9iks0ajQOc8BDLmOExviFTffix_ksEN7J7HPEvGi-0vhvAeWz84CPyh5MpLbfrwYN5pGJlLXUOuPmGflHjQzUw8XGauZuHK3taDNmAqoBq2BHF52ZU-j-yQtDnhWn7_kHW8oUv0gFWIZN0deDTs1rc65zB_yJnXh0gLoiadintQVsViR9Wi0RNMAksHwYUT34TPJu2AShKE2EfL6SD0w9dVuUz2s"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-container-padding pt-stack-sm space-y-stack-md">
+<!-- Header & Filters -->
+<section class="space-y-4">
+<div class="flex flex-col gap-1">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Métricas de Rendimiento</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Analiza tu progreso y maximiza tus ganancias.</p>
+</div>
+<div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+<button class="px-6 py-2 bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-full whitespace-nowrap active:scale-95 transition-all">Hoy</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Semana</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Mes</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md rounded-full whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">Personalizado</button>
+</div>
+</section>
+<!-- Bento Grid Highlights -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-gutter">
+<!-- Main Earning Card -->
+<div class="col-span-2 bento-row p-stack-md rounded-xl bento-card flex flex-col justify-between border-l-4 border-secondary">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Facturación Bruta</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="font-numeric-xl text-numeric-xl text-secondary">$</span>
+<span class="font-numeric-xl text-numeric-xl text-on-surface">12,450.00</span>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-4">
+<span class="flex items-center text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                        +12%
+                    </span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">vs. ayer</span>
+</div>
+</div>
+<!-- Trips Card -->
+<div class="p-stack-md rounded-xl bento-card flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Viajes</span>
+<div class="font-headline-md text-headline-md mt-1">24</div>
+</div>
+<div class="w-full h-8 flex items-end gap-1 mt-4">
+<div class="bg-primary/20 w-full h-1/2 rounded-t-sm"></div>
+<div class="bg-primary/20 w-full h-3/4 rounded-t-sm"></div>
+<div class="bg-primary/20 w-full h-full rounded-t-sm"></div>
+<div class="bg-primary w-full h-2/3 rounded-t-sm"></div>
+<div class="bg-primary/20 w-full h-1/2 rounded-t-sm"></div>
+</div>
+</div>
+<!-- Hours Card -->
+<div class="p-stack-md rounded-xl bento-card flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">En Línea</span>
+<div class="font-headline-md text-headline-md mt-1">8h 12m</div>
+</div>
+<div class="flex items-center gap-2 mt-4">
+<span class="material-symbols-outlined text-on-surface-variant text-base">schedule</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Eficiencia 92%</span>
+</div>
+</div>
+</section>
+<!-- Main Chart Section -->
+<section class="bento-card rounded-xl p-stack-md relative overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Tendencia Diaria</h3>
+<button class="p-1 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="h-48 w-full flex items-end justify-between px-2 relative">
+<!-- Simple SVG Graph Representation -->
+<svg class="absolute inset-0 w-full h-full px-4 overflow-visible" preserveaspectratio="none" viewbox="0 0 400 100">
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:rgba(64, 229, 108, 0.4);stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:rgba(64, 229, 108, 0);stop-opacity:1"></stop>
+</lineargradient>
+</defs>
+<path d="M0,80 Q40,60 80,75 T160,40 T240,60 T320,20 T400,30 L400,100 L0,100 Z" fill="url(#grad1)"></path>
+<path d="M0,80 Q40,60 80,75 T160,40 T240,60 T320,20 T400,30" fill="none" stroke="#40e56c" stroke-width="3"></path>
+<circle cx="320" cy="20" fill="#40e56c" r="4"></circle>
+</svg>
+<div class="absolute top-2 left-1/2 -translate-x-1/2 bg-surface-elevated px-3 py-1 rounded-full border border-secondary/20 shadow-lg flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-secondary">Pico de Ganancias: 18:00</span>
+</div>
+</div>
+<div class="flex justify-between mt-4 font-label-sm text-label-sm text-on-surface-variant px-2">
+<span>06:00</span>
+<span>10:00</span>
+<span>14:00</span>
+<span>18:00</span>
+<span>22:00</span>
+</div>
+</section>
+<!-- Secondary Insights Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Commissions Card -->
+<div class="bento-card rounded-xl p-stack-md flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-error-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-error">receipt_long</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Comisiones Pagadas</p>
+<p class="font-headline-md text-headline-md text-on-surface">$1,420</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Tasa Media</p>
+<p class="font-label-md text-label-md text-on-surface">11.4%</p>
+</div>
+</div>
+<!-- Cash Advances Insight -->
+<div class="bento-card rounded-xl p-stack-md flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">payments</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Adelantos Disponibles</p>
+<p class="font-headline-md text-headline-md text-on-surface">$5,800</p>
+</div>
+</div>
+<button class="bg-secondary text-on-secondary font-label-md text-label-md px-4 py-2 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all">
+                    Solicitar
+                </button>
+</div>
+</section>
+<!-- Promotion Banner -->
+<section class="relative rounded-xl overflow-hidden h-40 group cursor-pointer">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_4L9XkTFix4yJ48QlRczsEIRqo1NRSkir-kpyGwdFucCgAHSSdqzPbY_u_yuKT_PrG_iBJXWU1GPSgmg7iBOL8XvLGfE3M33QqU4jdyYPVffOjdSf9_jd78O_lrkNnIOFdB20h-xKgnzu0RsJWwUGUZe1_N_6v5shmXxBI3vC3e4rWPO_Ya8JmUYF4TNuZC_qMgVomUkqC4oi1eCz_MZ6XGptL4U88rBZc3oUpPkCEhLGGeYfdKR_AjgjxlI_HvHgCktwiy1n5wI"/>
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest to-transparent flex flex-col justify-center px-8">
+<span class="bg-secondary text-on-secondary font-label-sm text-label-sm px-2 py-0.5 rounded-sm self-start mb-2">PROMO</span>
+<h4 class="font-headline-md text-headline-md text-white max-w-[200px]">Bono de Fin de Semana</h4>
+<p class="font-body-md text-on-surface-variant">Completa 15 viajes y gana extra.</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-high rounded-t-xl shadow-lg z-50 border-t border-white/10">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80 transition-all">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80 transition-all">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Gestión</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80 transition-all">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Adelantos</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary font-bold scale-110 duration-150 ease-in-out">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-label-sm text-label-sm">Métricas</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80 transition-all">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</button>
+</nav>
+<script>
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = 'rgba(64, 229, 108, 0.3)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            });
+        });
+
+        // Filter button logic
+        const filterButtons = document.querySelectorAll('button[class*="rounded-full"]');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                    b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                
+                if ('vibrate' in navigator) navigator.vibrate(5);
+            });
+        });
+    </script>
+</body></html>

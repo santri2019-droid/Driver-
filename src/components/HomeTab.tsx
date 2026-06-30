@@ -2,91 +2,58 @@ import React, { useState, useEffect } from "react";
 import { Timer, ArrowRight, Play, Square, Calendar, Flag, Settings2, HelpCircle, Car, TrendingUp, ChevronRight, CheckCircle2, User, Moon, Sun, Trash2, LogIn, ChevronDown, ChevronUp } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { DriverLog, GoalsConfig } from "../types";
-import { auth } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { useConfig } from "../contexts/ConfigContext";
+import { useAuth } from "../hooks/useAuth";
+import { useShiftManager } from "../hooks/useShiftManager";
 
-interface HomeTabProps {
-  logs: DriverLog[];
-  goals: GoalsConfig;
-  currencySymbol: string;
-  isShiftActive: boolean;
-  setIsShiftActive: (active: boolean) => void;
-  shiftSeconds: number;
-  setShiftSeconds: (val: number | ((prev: number) => number)) => void;
-  onResetAllData: () => void;
-  isDarkMode: boolean;
-  setIsDarkMode: (val: boolean) => void;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function HomeTab({
-  logs,
-  goals,
-  currencySymbol,
-  isShiftActive,
-  setIsShiftActive,
-  shiftSeconds,
-  setShiftSeconds,
-  onResetAllData,
-  isDarkMode,
-  setIsDarkMode,
-}: HomeTabProps) {
+export default function HomeTab() {
+  const {
+    logs,
+    setLogs,
+    goals,
+    currencySymbol,
+    isShiftActive,
+    setIsShiftActive,
+    shiftSeconds,
+    setShiftSeconds,
+    resetAllData: onResetAllData,
+    isDarkMode,
+    setIsDarkMode,
+  } = useAppStore();
   const { t, ts } = useConfig();
   const [showFormulaTooltip, setShowFormulaTooltip] = useState<string | null>(null);
-  const [swipeProgress, setSwipeProgress] = useState(0); // for simulating slide-to-start drag
-  const [isSwiping, setIsSwiping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  
-  const [email, setEmail] = useState(() => localStorage.getItem("dc_auth_email") || "");
-  const [password, setPassword] = useState("");
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [authError, setAuthError] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return unsubscribe;
-  }, []);
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    user,
+    isRegisterMode,
+    setIsRegisterMode,
+    authError,
+    handleLogin,
+    handleForgotPassword,
+    handleLogout,
+  } = useAuth();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-    if(email && password) {
-      try {
-        if (isRegisterMode) {
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
-        }
-        localStorage.setItem("dc_auth_email", email);
-      } catch (error: any) {
-        let msg = "Ocurrió un error al autenticar.";
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          msg = "Credenciales incorrectas. Verifica tu contraseña o regístrate si no tienes cuenta.";
-        } else if (error.code === 'auth/email-already-in-use') {
-          msg = "Este correo ya está registrado. Cambia a Iniciar Sesión.";
-        } else if (error.code === 'auth/weak-password') {
-          msg = "La contraseña es muy débil (mínimo 6 caracteres).";
-        } else if (error.code === 'auth/invalid-email') {
-          msg = "El formato del correo electrónico no es válido.";
-        } else {
-          msg = error.message; // Fallback
-        }
-        setAuthError(msg);
-      }
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setPassword("");
-    } catch (error) {
-      console.error("Logout error", error);
-    }
-  };
+  const {
+    startOdometer,
+    setStartOdometer,
+    endOdometer,
+    setEndOdometer,
+    isConfirmingEnd,
+    swipeProgress,
+    handleSwipeStart,
+    handleSwipeMove,
+    handleStartShift,
+    handleEndShiftClick,
+    handleConfirmEndShift,
+    handleCancelEndShift,
+  } = useShiftManager(isShiftActive, setIsShiftActive, setShiftSeconds, setLogs);
 
   const handleReset = () => {
     if (window.confirm("¿Estás seguro de que deseas borrar toda tu información? Esto no se puede deshacer.")) {
@@ -214,52 +181,11 @@ export default function HomeTab({
     );
   };
 
-  // Swipe logic simulation
-  const handleSwipeStart = () => {
-    setIsSwiping(true);
-  };
-
-  const handleSwipeMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isSwiping) return;
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const container = document.getElementById("swipe-container");
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const distance = clientX - rect.left - 24; // 24px is offset of thumb
-    const progress = Math.max(0, Math.min(100, (distance / (rect.width - 48)) * 100));
-    setSwipeProgress(progress);
-
-    if (progress >= 90) {
-      setIsShiftActive(true);
-      setIsSwiping(false);
-      setSwipeProgress(0);
-    }
-  };
-
-  const handleSwipeEnd = () => {
-    if (swipeProgress < 90) {
-      setSwipeProgress(0);
-      setIsSwiping(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isSwiping) {
-      window.addEventListener("mouseup", handleSwipeEnd);
-      window.addEventListener("touchend", handleSwipeEnd);
-    }
-    return () => {
-      window.removeEventListener("mouseup", handleSwipeEnd);
-      window.removeEventListener("touchend", handleSwipeEnd);
-    };
-  }, [isSwiping]);
-
-  // Quick button trigger for starting/stopping driving shift
   const toggleShiftDirectly = () => {
     if (isShiftActive) {
-      setIsShiftActive(false);
+      handleEndShiftClick();
     } else {
-      setIsShiftActive(true);
+      handleStartShift();
     }
   };
 
@@ -316,12 +242,44 @@ export default function HomeTab({
           </div>
 
           <div className="flex-1 max-w-xs">
-            {isShiftActive ? (
+            {isConfirmingEnd ? (
+              <div className="space-y-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase font-bold text-brand-on-surface-variant block">
+                    Odómetro Final (km)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={`Inicial: ${startOdometer || "0"}`}
+                    value={endOdometer}
+                    onChange={(e) => setEndOdometer(e.target.value)}
+                    className="w-full bg-brand-bg-darker border border-brand-border rounded-xl px-3 py-1.5 text-sm text-brand-on-surface focus:border-brand-primary outline-none"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleConfirmEndShift}
+                    className="flex-1 py-2 bg-brand-primary text-black font-bold rounded-lg text-xs cursor-pointer hover:brightness-110"
+                  >
+                    Confirmar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEndShift}
+                    className="flex-1 py-2 bg-brand-container-highest border border-brand-border text-brand-on-surface-variant hover:text-brand-on-surface font-bold rounded-lg text-xs cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : isShiftActive ? (
               // Stop Shift Button
               <button
                 type="button"
                 id="stop-shift-btn"
-                onClick={toggleShiftDirectly}
+                onClick={handleEndShiftClick}
                 className="w-full h-11 bg-brand-error/10 hover:bg-brand-error/20 text-brand-error border border-brand-error/20 font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
                 style={ts("home_end_shift", 18)}
               >
@@ -329,27 +287,41 @@ export default function HomeTab({
                 {t("home_end_shift", "Finalizar Turno")}
               </button>
             ) : (
-              // Swipe to Start Slide Container
-              <div
-                id="swipe-container"
-                onMouseMove={handleSwipeMove}
-                onTouchMove={handleSwipeMove}
-                onMouseDown={handleSwipeStart}
-                onTouchStart={handleSwipeStart}
-                className="relative w-full h-12 bg-brand-bg-darker/60 rounded-full border border-brand-border/60 flex items-center p-1 overflow-hidden select-none cursor-pointer"
-              >
-                <div 
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none font-bold text-brand-on-surface-variant uppercase tracking-wider transition-opacity"
-                  style={{ opacity: swipeProgress > 45 ? 0.2 : 1, ...ts("home_swipe_start", 14) }}
-                >
-                  {t("home_swipe_start", "Desliza para arrancar")}
+              <div className="space-y-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase font-bold text-brand-on-surface-variant block">
+                    Odómetro Inicial (km)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Ej: 124500"
+                    value={startOdometer}
+                    onChange={(e) => setStartOdometer(e.target.value)}
+                    className="w-full bg-brand-bg-darker border border-brand-border rounded-xl px-3 py-1.5 text-sm text-brand-on-surface focus:border-brand-primary outline-none"
+                  />
                 </div>
-                
+                {/* Swipe to Start Slide Container */}
                 <div
-                  className="h-10 w-10 bg-brand-primary hover:bg-brand-primary-container rounded-full flex items-center justify-center shadow-lg transition-transform touch-none"
-                  style={{ transform: `translateX(${swipeProgress * 2.2}px)` }}
+                  id="swipe-container"
+                  onMouseMove={handleSwipeMove}
+                  onTouchMove={handleSwipeMove}
+                  onMouseDown={handleSwipeStart}
+                  onTouchStart={handleSwipeStart}
+                  className="relative w-full h-12 bg-brand-bg-darker/60 rounded-full border border-brand-border/60 flex items-center p-1 overflow-hidden select-none cursor-pointer"
                 >
-                  <ChevronRight className="w-5 h-5 text-black shrink-0" />
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none font-bold text-brand-on-surface-variant uppercase tracking-wider transition-opacity"
+                    style={{ opacity: swipeProgress > 45 ? 0.2 : 1, ...ts("home_swipe_start", 14) }}
+                  >
+                    {t("home_swipe_start", "Desliza para arrancar")}
+                  </div>
+                  
+                  <div
+                    className="h-10 w-10 bg-brand-primary hover:bg-brand-primary-container rounded-full flex items-center justify-center shadow-lg transition-transform touch-none"
+                    style={{ transform: `translateX(${swipeProgress * 2.2}px)` }}
+                  >
+                    <ChevronRight className="w-5 h-5 text-black shrink-0" />
+                  </div>
                 </div>
               </div>
             )}
@@ -599,6 +571,17 @@ export default function HomeTab({
                     </label>
                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-on-surface focus:border-brand-primary outline-none" required />
                   </div>
+                  {!isRegisterMode && (
+                    <div className="text-right pt-0.5">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-xs text-brand-primary hover:underline cursor-pointer"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center pt-2">
                     <button 
                       type="button" 

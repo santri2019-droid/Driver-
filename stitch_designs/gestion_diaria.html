@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Cash - Gestión Diaria</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #111415;
+            color: #e1e3e4;
+            font-family: 'Manrope', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(29, 32, 33, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .success-glow {
+            box-shadow: 0 0 20px rgba(64, 229, 108, 0.15);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#e1e3e4",
+                        "surface-dim": "#111415",
+                        "surface": "#111415",
+                        "secondary-container": "#02c953",
+                        "secondary": "#40e56c",
+                        "surface-container-high": "#272a2c",
+                        "on-surface-variant": "#c4c6cf",
+                        "primary": "#b0c8f0",
+                        "surface-elevated": "#002B52",
+                        "surface-container": "#1d2021"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "20px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "stack-lg": "40px",
+                        "stack-sm": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "numeric-xl": ["Hanken Grotesk"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-md": ["Manrope"],
+                        "body-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "numeric-xl": ["40px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-surface dark:bg-surface w-full max-w-7xl mx-auto px-container-padding py-base flex justify-between items-center">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-variant dark:hover:bg-surface-variant rounded-full transition-all active:scale-95" onclick="toggleDrawer()">
+<span class="material-symbols-outlined text-primary dark:text-primary">menu</span>
+</button>
+<h1 class="font-display-lg text-headline-md text-primary dark:text-primary tracking-tight">Driver Cash</h1>
+</div>
+<button class="p-2 hover:bg-surface-variant dark:hover:bg-surface-variant rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary dark:text-primary">account_circle</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-container-padding pt-stack-sm space-y-stack-md">
+<!-- Shift Status Banner -->
+<section class="flex items-center justify-between bg-surface-container rounded-xl p-4 border-l-4 border-secondary">
+<div>
+<p class="font-label-sm text-on-surface-variant/70 uppercase tracking-wider">Estado del Turno</p>
+<h2 class="font-headline-md text-on-surface">En Conducción</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<span class="font-label-md text-secondary">08:24h activo</span>
+</div>
+</section>
+<!-- Primary Metric Hero -->
+<section class="glass-card rounded-xl p-6 relative overflow-hidden">
+<div class="relative z-10">
+<p class="font-label-md text-on-surface-variant mb-1">Facturación Bruta Diaria</p>
+<div class="flex items-baseline gap-2">
+<span class="font-numeric-xl text-display-lg text-on-surface">$</span>
+<span class="font-numeric-xl text-display-lg text-on-surface">248.50</span>
+</div>
+<div class="mt-4 flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+<span class="font-label-md">+12% vs. ayer</span>
+</div>
+</div>
+<!-- Decorative Sparkline Placeholder -->
+<div class="absolute bottom-0 right-0 w-1/2 h-24 opacity-20">
+<svg class="w-full h-full preserve-3d" viewbox="0 0 100 40">
+<path d="M0 35 Q 20 10, 40 25 T 80 5 T 100 15" fill="none" stroke="#40e56c" stroke-width="2"></path>
+</svg>
+</div>
+</section>
+<!-- Action Grid (Bento Style) -->
+<div class="grid grid-cols-2 gap-gutter">
+<!-- CTA: Adelanto -->
+<button class="col-span-2 bg-secondary-container text-on-secondary-container rounded-xl p-6 flex flex-col justify-between items-start h-40 group transition-all active:scale-95 hover:brightness-105">
+<div class="bg-on-secondary-container/10 p-2 rounded-lg">
+<span class="material-symbols-outlined fill-icon text-3xl">payments</span>
+</div>
+<div>
+<h3 class="font-headline-md text-left leading-tight">Solicitar Adelanto</h3>
+<p class="font-label-sm opacity-80 mt-1">Recibe tus ganancias al instante</p>
+</div>
+</button>
+<!-- Small Stats -->
+<div class="bg-surface-container rounded-xl p-4 flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-primary">local_gas_station</span>
+<div>
+<p class="font-label-sm text-on-surface-variant">Gastos Hoy</p>
+<p class="font-headline-md text-on-surface">$42.00</p>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-4 flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-primary">route</span>
+<div>
+<p class="font-label-sm text-on-surface-variant">Viajes</p>
+<p class="font-headline-md text-on-surface">14</p>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<section class="space-y-stack-sm">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-on-surface">Actividad Reciente</h3>
+<button class="text-secondary font-label-md">Ver todos</button>
+</div>
+<div class="space-y-2">
+<!-- Activity Item 1 -->
+<div class="flex items-center justify-between p-4 bg-surface-container/50 rounded-xl border-l-2 border-secondary/30">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Viaje Finalizado</p>
+<p class="font-label-sm text-on-surface-variant">Hace 12 mins • Centro</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface">+$18.20</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex items-center justify-between p-4 bg-surface-container/50 rounded-xl border-l-2 border-primary/30">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]">payments</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Adelanto Aprobado</p>
+<p class="font-label-sm text-on-surface-variant">Hoy 10:30 AM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface">+$50.00</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Driver Map Preview -->
+<section class="rounded-xl overflow-hidden h-48 relative shadow-lg">
+<img alt="Mapa de la ciudad" class="w-full h-full object-cover grayscale brightness-50 contrast-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB5N6MQdtS5OY1c9rPB60BLDwsY6eVgjfHh5Pzc7d2rX9A0GWN0pTjVoEGGj49Zq8527Ll4s53Dwpxbm1PJxNHDqeiyaqzG76Qgc6kWksOpr1lof-8bCLp6NNj7i1T2XU2CUrq_Pt0JYrKcQh6XD2pLVasfWz3kig4tSA8AzrV3G9av_mo4nZITrRKhzGhetGtAjVlOAL_J691zo_Kdw-o1evHxkjVCo_BBbX8CUle2QVAcZbeC7mBK4n6l_GF36RJ8TRy4LYwGZU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<div class="bg-secondary rounded-full px-3 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] font-bold text-on-secondary-container">bolt</span>
+<span class="text-[12px] font-bold text-on-secondary-container">ZONA ALTA DEMANDA</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Drawer (Hidden by default) -->
+<div class="fixed inset-0 bg-black/60 z-[55] opacity-0 pointer-events-none transition-opacity duration-300" id="drawer-overlay" onclick="toggleDrawer()"></div>
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col p-stack-sm bg-surface-container dark:bg-surface-container h-full w-80 rounded-r-xl shadow-2xl -translate-x-full transition-transform duration-300 ease-in-out" id="main-drawer">
+<div class="flex flex-col p-4 mb-8">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-4 border-2 border-secondary">
+<img alt="Driver Profile Picture" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK0Bm-wgO1evOh6G9skRzAIhQ6SSkAZ2pX1ZVF4dgiGGIGX96gnduVgMJ572RU60nB8ulbQHOTu7wE--YDKeqOBpWLK8y7PiWPqzo3Pmfs5D6CJh1bvuL3AWLl6DiaP5szllNhWkrNFR_E8MJKhIwtVK1ZZBJDWYWVhFzkBoBYqFi7t_XCc9GAKfJ9QkSgC0c4LsAPVtWkXdVMXD4nycTVgDwKqtCusb6zYty2rOKtHSd1fONQE0yvN46lATosCcqOL6Me-kmZ9_k"/>
+</div>
+<h3 class="font-headline-md text-primary">Juan Pérez</h3>
+<p class="font-body-md text-on-surface-variant">Conductor Pro</p>
+<p class="font-label-sm text-on-surface-variant/60">ID: 48293</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-4 p-4 text-on-surface hover:bg-surface-variant rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md">Configuración</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-on-surface hover:bg-surface-variant rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md">Historial</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-on-surface hover:bg-surface-variant rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-md">Ayuda</span>
+</a>
+<hr class="my-4 border-white/5 mx-4"/>
+<a class="flex items-center gap-4 p-4 text-error-red hover:bg-error-container/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md">Cerrar Sesión</span>
+</a>
+</nav>
+</aside>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-high rounded-t-xl shadow-lg z-50 border-t border-white/5">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary font-bold scale-110 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined fill-icon">home</span>
+<span class="font-label-sm text-label-sm">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Gestión</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Adelantos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm">Métricas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-surface-variant/60 hover:text-secondary/80" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Perfil</span>
+</a>
+</nav>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('main-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            const isOpen = !drawer.classList.contains('-translate-x-full');
+
+            if (isOpen) {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+    </script>
+</body></html>

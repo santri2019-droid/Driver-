@@ -1,116 +1,42 @@
-import React, { useState, useEffect } from "react";
-import { Plus, BookOpen, Trash2, Edit3, Check, RotateCcw, AlertCircle, ShoppingBag, Coins, DollarSign } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, BookOpen, Trash2, Edit3, Check, RotateCcw, AlertCircle, ShoppingBag, Coins, DollarSign, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { DriverLog, GoalsConfig } from "../types";
+import { useJournalCalendar } from "../hooks/useJournalCalendar";
+import { useJournalForm } from "../hooks/useJournalForm";
+import { handleDownloadDailyTxt, handleDownloadMonthlyTxt, getMonthNameSpanish } from "../utils/exportUtils";
 
-interface JournalTabProps {
-  logs: DriverLog[];
-  setLogs: (logs: DriverLog[] | ((prev: DriverLog[]) => DriverLog[])) => void;
-  goals: GoalsConfig;
-  currencySymbol: string;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function JournalTab({
-  logs,
-  setLogs,
-  goals,
-  currencySymbol,
-}: JournalTabProps) {
-  // Calendar row selector choices
-  const initialDays = [
-    { key: "L", label: "LUN", num: 22, dateStr: "2026-06-22" },
-    { key: "M", label: "MAR", num: 23, dateStr: "2026-06-23" },
-    { key: "X", label: "MIE", num: 24, dateStr: "2026-06-24" },
-    { key: "J", label: "JUE", num: 25, dateStr: "2026-06-25" },
-    { key: "V", label: "VIE", num: 26, dateStr: "2026-06-26" },
-    { key: "S", label: "SAB", num: 27, dateStr: "2026-06-27" },
-    { key: "D", label: "DOM", num: 28, dateStr: "2026-06-28" },
-  ];
+export default function JournalTab() {
+  const { logs, setLogs, goals, currencySymbol } = useAppStore();
+  const {
+    daysList,
+    selectedDayObj,
+    setSelectedDayObj,
+    calendarStartIndex,
+    setCalendarStartIndex,
+  } = useJournalCalendar();
 
-  const [selectedDayObj, setSelectedDayObj] = useState(initialDays[0]); // LUN 22 as default corresponding to today
-  
-  // Input fields state
-  const [incomesState, setIncomesState] = useState<{ id: string; source: string; amount: number }[]>([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 120 }]);
-  const [fuelStr, setFuelStr] = useState("30.00");
-  const [maintStr, setMaintStr] = useState("10.00");
-  const [otherStr, setOtherStr] = useState("0.00");
+  const {
+    incomesState,
+    setIncomesState,
+    fuelStr,
+    setFuelStr,
+    maintStr,
+    setMaintStr,
+    otherStr,
+    setOtherStr,
+    kilometersStr,
+    setKilometersStr,
+    feedbackMsg,
+    calculatedNet,
+    handleSaveLogs,
+    handlePreloadDefaults,
+    handleDeleteLog,
+  } = useJournalForm(logs, setLogs, selectedDayObj);
 
-  const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; error: boolean } | null>(null);
-
-  // Parse strings to float safely
-  const grossNum = incomesState.reduce((acc, curr) => acc + curr.amount, 0);
-  const fuelNum = parseFloat(fuelStr) || 0;
-  const maintNum = parseFloat(maintStr) || 0;
-  const otherNum = parseFloat(otherStr) || 0;
-  const calculatedNet = grossNum - fuelNum - maintNum - otherNum;
-
-  // When selected day shifts, check if a log already exists for it, and prepopulate values!
-  // This turns the journal into an elegant interactive editor.
-  useEffect(() => {
-    const existingLog = logs.find(l => l.date === selectedDayObj.dateStr);
-    if (existingLog) {
-      setIncomesState(existingLog.incomes || [{ id: 'inc-'+Date.now(), source: 'Uber', amount: existingLog.grossIncome }]);
-      setFuelStr(existingLog.fuelExpense.toString());
-      setMaintStr(existingLog.maintenanceExpense.toString());
-      setOtherStr(existingLog.otherExpense ? existingLog.otherExpense.toString() : '0');
-    } else {
-      // Default recommended values based on goals setup or empty fields
-      setIncomesState([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 0 }]);
-      setFuelStr("");
-      setMaintStr("");
-      setOtherStr("0");
-    }
-    setFeedbackMsg(null);
-  }, [selectedDayObj, logs, goals]);
-
-  // Handle saving the logged values
-  const handleSaveLogs = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (incomesState.length === 0 && !fuelStr && !maintStr) {
-      setFeedbackMsg({ text: "Introduce al menos un valor de ingresos o gastos.", error: true });
-      return;
-    }
-
-    const newLogItem: DriverLog = {
-      id: "log-" + selectedDayObj.dateStr,
-      date: selectedDayObj.dateStr,
-      dayOfWeek: selectedDayObj.key,
-      dayLabel: `${selectedDayObj.label} ${selectedDayObj.num}`,
-      grossIncome: grossNum,
-      incomes: incomesState,
-      fuelExpense: fuelNum,
-      maintenanceExpense: maintNum,
-      otherExpense: otherNum,
-      kilometers: 0,
-      netIncome: calculatedNet,
-    };
-
-    setLogs((prevLogs) => {
-      // Filter out any duplicate of this date
-      const filtered = prevLogs.filter(l => l.date !== selectedDayObj.dateStr);
-      return [...filtered, newLogItem].sort((a, b) => a.date.localeCompare(b.date));
-    });
-
-    setFeedbackMsg({ text: `✓ Registro del ${selectedDayObj.label} ${selectedDayObj.num} guardado correctamente.`, error: false });
-    
-    // Clear feedback automatically
-    setTimeout(() => {
-      setFeedbackMsg(null);
-    }, 4500);
-  };
-
-  // Quick action: preload defaults
-  const handlePreloadDefaults = () => {
-    setIncomesState([{ id: 'inc-'+Date.now(), source: 'Uber', amount: 140 }]);
-    setFuelStr("35.00");
-    setMaintStr("12.00");
-    setOtherStr("0");
-  };
-
-  // Delete log item
-  const handleDeleteLog = (id: string) => {
-    setLogs((prevLogs) => prevLogs.filter(item => item.id !== id));
-  };
+  const [selectedHistMonth, setSelectedHistMonth] = useState<number>(new Date().getMonth());
+  const [selectedHistYear, setSelectedHistYear] = useState<number>(new Date().getFullYear());
 
   return (
     <div className="space-y-6">
@@ -123,36 +49,52 @@ export default function JournalTab({
       </section>
 
       {/* Date picker row */}
-      <section className="bg-brand-container/40 p-1 rounded-xl border border-brand-border/60">
-        <div className="flex justify-between md:justify-around overflow-x-auto gap-1 py-1">
-          {initialDays.map((day) => {
+      <section className="bg-brand-container/40 p-1.5 rounded-xl border border-brand-border/60 flex items-center justify-between gap-2 select-none">
+        <button
+          type="button"
+          onClick={() => setCalendarStartIndex(prev => Math.max(0, prev - 1))}
+          disabled={calendarStartIndex === 0}
+          className="p-2 bg-brand-container hover:bg-brand-container-highest disabled:opacity-30 text-brand-on-surface-variant hover:text-brand-on-surface rounded-xl border border-brand-border/40 transition-colors cursor-pointer shrink-0"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <div className="flex-1 grid grid-cols-3 gap-1 px-1">
+          {daysList.slice(calendarStartIndex, calendarStartIndex + 3).map((day) => {
             const isSelected = selectedDayObj.dateStr === day.dateStr;
             const hasExisting = logs.some(l => l.date === day.dateStr);
-            
+
             return (
               <button
                 key={day.dateStr}
                 onClick={() => setSelectedDayObj(day)}
                 type="button"
-                className={`flex flex-col items-center justify-center p-2 rounded-xl min-w-[50px] transition-all cursor-pointer relative ${
-                  isSelected 
-                    ? "bg-brand-primary text-black font-extrabold scaling" 
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all cursor-pointer relative ${isSelected
+                    ? "bg-brand-primary text-black font-extrabold scaling"
                     : "bg-brand-container hover:bg-brand-container-highest text-brand-on-surface-variant hover:text-brand-on-surface"
-                }`}
+                  }`}
               >
                 <span className="text-[10px] uppercase font-bold tracking-wider">{day.label}</span>
                 <span className="text-base font-extrabold">{day.num}</span>
 
                 {/* Has logged data dot badge */}
                 {hasExisting && (
-                  <span className={`w-1.5 h-1.5 rounded-full absolute bottom-1 ${
-                    isSelected ? "bg-black" : "bg-brand-primary"
-                  }`}></span>
+                  <span className={`w-1.5 h-1.5 rounded-full absolute bottom-1 ${isSelected ? "bg-black" : "bg-brand-primary"
+                    }`}></span>
                 )}
               </button>
             );
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setCalendarStartIndex(prev => Math.min(daysList.length - 3, prev + 1))}
+          disabled={calendarStartIndex >= daysList.length - 3}
+          className="p-2 bg-brand-container hover:bg-brand-container-highest disabled:opacity-30 text-brand-on-surface-variant hover:text-brand-on-surface rounded-xl border border-brand-border/40 transition-colors cursor-pointer shrink-0"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </section>
 
       {/* Logging Form */}
@@ -160,7 +102,16 @@ export default function JournalTab({
         {/* Dynamic header showing existing status */}
         <div className="flex justify-between items-center border-b border-brand-border/60 pb-3">
           <span className="text-xs text-brand-on-surface-variant font-semibold">
-            Modificando día: <strong className="text-brand-on-surface font-black">{selectedDayObj.label} {selectedDayObj.num} de Junio</strong>
+            Modificando día: <strong className="text-brand-on-surface font-black">
+              {selectedDayObj.label} {selectedDayObj.num} de {(() => {
+                const d = new Date(selectedDayObj.dateStr + "T00:00:00");
+                const monthNames = [
+                  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                ];
+                return monthNames[d.getMonth()];
+              })()}
+            </strong>
           </span>
           <button
             onClick={handlePreloadDefaults}
@@ -181,7 +132,7 @@ export default function JournalTab({
             </h3>
             <button
               type="button"
-              onClick={() => setIncomesState([...incomesState, { id: 'inc-'+Date.now(), source: 'Nueva App', amount: 0 }])}
+              onClick={() => setIncomesState([...incomesState, { id: 'inc-' + Date.now(), source: 'Nueva App', amount: 0 }])}
               className="text-xs text-brand-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3 h-3" />
@@ -224,7 +175,7 @@ export default function JournalTab({
                 const updated = [...incomesState];
                 updated.splice(i, 1);
                 setIncomesState(updated);
-              }} className="text-brand-error p-2 cursor-pointer"><Trash2 className="w-4 h-4"/></button>
+              }} className="text-brand-error p-2 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
             </div>
           ))}
         </div>
@@ -235,8 +186,8 @@ export default function JournalTab({
             <AlertCircle className="w-4 h-4" />
             Egresos Operativos Directos
           </h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Gasto combustible */}
             <div className="space-y-1">
               <label className="text-[10px] font-semibold text-brand-on-surface-variant block uppercase tracking-wider">
@@ -293,6 +244,24 @@ export default function JournalTab({
                 />
               </div>
             </div>
+
+            {/* Kilómetros Recorridos */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-brand-on-surface-variant block uppercase tracking-wider">
+                Kms Recorridos
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={kilometersStr}
+                  onChange={(e) => setKilometersStr(e.target.value)}
+                  placeholder="0"
+                  className="w-full bg-brand-bg-darker text-brand-on-surface text-xs rounded-lg px-3 py-1.5 border border-brand-border focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -311,11 +280,10 @@ export default function JournalTab({
 
         {/* Message feedback alert */}
         {feedbackMsg && (
-          <div className={`p-3 rounded-lg text-xs font-bold border ${
-            feedbackMsg.error 
-              ? "bg-brand-error/10 border-brand-error/30 text-brand-error" 
+          <div className={`p-3 rounded-lg text-xs font-bold border ${feedbackMsg.error
+              ? "bg-brand-error/10 border-brand-error/30 text-brand-error"
               : "bg-brand-primary/10 border-brand-primary/30 text-brand-primary"
-          }`}>
+            }`}>
             {feedbackMsg.text}
           </div>
         )}
@@ -329,60 +297,146 @@ export default function JournalTab({
       </form>
 
       {/* Historically Logged entries checklist */}
-      <section id="historical-logs-section" className="space-y-3">
-        <h3 className="text-xs font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
-          Registros del mes ({logs.length})
-        </h3>
-        
+      <section id="historical-logs-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-brand-border/40">
+          <h3 className="text-xs font-semibold text-brand-on-surface-variant uppercase tracking-wider block">
+            Registros del mes ({logs.length})
+          </h3>
+          {logs.length > 0 && (
+            <button
+              onClick={() => handleDownloadMonthlyTxt(new Date().getMonth(), new Date().getFullYear(), logs, currencySymbol)}
+              className="text-xs text-brand-primary font-bold hover:underline flex items-center gap-1.5 cursor-pointer bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-lg"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Descargar Resumen del Mes
+            </button>
+          )}
+        </div>
+
         {logs.length === 0 ? (
           <div className="bg-brand-container/30 border border-brand-border/40 rounded-xl p-6 text-center text-xs text-brand-on-surface-variant leading-relaxed">
             Aún no has guardado registros de conducción de forma persistente. Introduce valores arriba para iniciar.
           </div>
         ) : (
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-            {logs.slice().reverse().map((log) => (
-              <div 
-                key={log.id} 
-                className="bg-brand-container hover:bg-brand-container/95 border border-brand-border/60 p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-brand-on-surface">{log.dayLabel} de Junio</span>
-                    <span className="text-[9px] text-brand-on-surface-variant font-mono">{log.date}</span>
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[10px] text-brand-on-surface-variant font-mono">
-                    <span>Bruto: <strong className="text-brand-on-surface">{currencySymbol}{log.grossIncome}</strong></span>
-                    <span>•</span>
-                    <span>Nafta: <strong className="text-brand-error/90">{currencySymbol}{log.fuelExpense}</strong></span>
-                    <span>•</span>
-                    <span>Reparos: <strong className="text-brand-error/90">{currencySymbol}{log.maintenanceExpense}</strong></span>
-                    <span>•</span>
-                    <span>Kms: <strong className="text-brand-tertiary">0</strong></span>
-                  </div>
-                </div>
+            {logs.slice().reverse().map((log) => {
+              const d = new Date(log.date + "T00:00:00");
+              const monthName = getMonthNameSpanish(d.getMonth());
 
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <span className="text-[8px] uppercase font-bold tracking-wider text-brand-on-surface-variant block">Neto Limpio</span>
-                    <span className={`text-sm font-extrabold font-mono ${log.netIncome >= 0 ? "text-brand-primary" : "text-brand-error"}`}>
-                      {currencySymbol}{log.netIncome.toFixed(2)}
-                    </span>
+              return (
+                <div
+                  key={log.id}
+                  className="bg-brand-container hover:bg-brand-container/95 border border-brand-border/60 p-3.5 rounded-xl flex items-center justify-between gap-3 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-brand-on-surface">{log.dayLabel} de {monthName}</span>
+                      <span className="text-[9px] text-brand-on-surface-variant font-mono">{log.date}</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[10px] text-brand-on-surface-variant font-mono">
+                      <span>Bruto: <strong className="text-brand-on-surface">{currencySymbol}{log.grossIncome}</strong></span>
+                      <span>•</span>
+                      <span>Nafta: <strong className="text-brand-error/90">{currencySymbol}{log.fuelExpense}</strong></span>
+                      <span>•</span>
+                      <span>Reparos: <strong className="text-brand-error/90">{currencySymbol}{log.maintenanceExpense}</strong></span>
+                      <span>•</span>
+                      <span>Kms: <strong className="text-brand-tertiary">{log.kilometers || 0}</strong></span>
+                    </div>
                   </div>
-                  
-                  <button
-                    onClick={() => handleDeleteLog(log.id)}
-                    type="button"
-                    title="Eliminar este log"
-                    className="p-1.5 rounded bg-brand-error/10 hover:bg-brand-error/20 border border-brand-error/10 hover:border-brand-error text-brand-error transition-all cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-right mr-1">
+                      <span className="text-[8px] uppercase font-bold tracking-wider text-brand-on-surface-variant block">Neto Limpio</span>
+                      <span className={`text-sm font-extrabold font-mono ${log.netIncome >= 0 ? "text-brand-primary" : "text-brand-error"}`}>
+                        {currencySymbol}{log.netIncome.toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Download Daily TXT Button */}
+                    <button
+                      onClick={() => handleDownloadDailyTxt(log, currencySymbol)}
+                      type="button"
+                      title="Descargar reporte .txt"
+                      className="p-1.5 rounded bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/10 hover:border-brand-primary text-brand-primary transition-all cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Delete Log Button */}
+                    <button
+                      onClick={() => handleDeleteLog(log.id)}
+                      type="button"
+                      title="Eliminar este log"
+                      className="p-1.5 rounded bg-brand-error/10 hover:bg-brand-error/20 border border-brand-error/10 hover:border-brand-error text-brand-error transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+      </section>
+
+      {/* Historical Month Exporter */}
+      <section className="bg-brand-container border border-brand-border rounded-2xl p-5 space-y-4 shadow-lg">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-brand-on-surface flex items-center gap-1.5">
+          <BookOpen className="w-4 h-4 text-brand-primary" />
+          Descargar Resumen de Meses Anteriores
+        </h3>
+        <p className="text-[11px] text-brand-on-surface-variant">
+          Selecciona un mes y año para descargar un reporte de texto consolidado con todos los ingresos, gastos y kilómetros recorridos.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="w-full sm:w-1/3 space-y-1">
+            <label className="text-[9px] font-semibold text-brand-on-surface-variant uppercase block">Mes</label>
+            <select
+              value={selectedHistMonth}
+              onChange={e => setSelectedHistMonth(parseInt(e.target.value))}
+              className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-on-surface"
+            >
+              <option value="0">Enero</option>
+              <option value="1">Febrero</option>
+              <option value="2">Marzo</option>
+              <option value="3">Abril</option>
+              <option value="4">Mayo</option>
+              <option value="5">Junio</option>
+              <option value="6">Julio</option>
+              <option value="7">Agosto</option>
+              <option value="8">Septiembre</option>
+              <option value="9">Octubre</option>
+              <option value="10">Noviembre</option>
+              <option value="11">Diciembre</option>
+            </select>
+          </div>
+
+          <div className="w-full sm:w-1/3 space-y-1">
+            <label className="text-[9px] font-semibold text-brand-on-surface-variant uppercase block">Año</label>
+            <select
+              value={selectedHistYear}
+              onChange={e => setSelectedHistYear(parseInt(e.target.value))}
+              className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-on-surface"
+            >
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+
+          <div className="w-full sm:w-1/3 flex items-end">
+            <button
+              onClick={() => handleDownloadMonthlyTxt(selectedHistMonth, selectedHistYear, logs, currencySymbol)}
+              disabled={logs.length === 0}
+              className="w-full py-2 bg-brand-primary disabled:bg-brand-primary/40 text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              Descargar Resumen .txt
+            </button>
+          </div>
+        </div>
       </section>
     </div>
   );

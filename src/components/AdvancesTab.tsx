@@ -2,19 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Landmark, ArrowRightLeft, Cpu, ShieldAlert, Check, HelpCircle, ArrowUpRight, Clock, Trash2, Calendar } from "lucide-react";
 import { Advance, DriverLog } from "../types";
 
-interface AdvancesTabProps {
-  logs: DriverLog[];
-  advances: Advance[];
-  setAdvances: (advances: Advance[] | ((prev: Advance[]) => Advance[])) => void;
-  currencySymbol: string;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function AdvancesTab({
-  logs,
-  advances,
-  setAdvances,
-  currencySymbol,
-}: AdvancesTabProps) {
+export default function AdvancesTab() {
+  const { logs, advances, setAdvances, currencySymbol } = useAppStore();
   // Calculable pool: 85% of total cumulative net earnings can be withdrawn early
   const baseEarnings = 2410;
   const loggedNetSum = logs.reduce((sum, log) => sum + log.netIncome, 0);

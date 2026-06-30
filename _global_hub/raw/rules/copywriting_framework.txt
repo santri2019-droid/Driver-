@@ -1,0 +1,22 @@
+# Framework Maestro: Copywriting Persuasivo para Mercado Libre
+
+Estructura psicológica diseñada para guiar al comprador desde el deseo hasta la confirmación de compra.
+
+## Arquitectura de la Descripción
+1.  **Gancho (Hook) y Empatía:**
+    *   Comenzar con una pregunta o afirmación que identifique el "punto de dolor" o la necesidad del cliente.
+    *   *Objetivo:* Que el cliente sienta que el producto fue hecho para él.
+2.  **Beneficios sobre Características:**
+    *   No enuncies datos técnicos solos. Tradúcelos a beneficios reales de vida.
+    *   *Ejemplo:* En lugar de "Batería de 5000mAh", usa "Energía para todo el día sin depender del cargador".
+3.  **Mata-Objeciones (FAQ Preventivo):**
+    *   Responder las 3-5 dudas que frenan la compra (envío, garantía, compatibilidad, materiales).
+4.  **Autoridad y Confianza:**
+    *   Mencionar brevemente la marca y el compromiso con la calidad para diferenciarse de revendedores genéricos.
+5.  **Llamado a la Acción (CTA):**
+    *   Instrucción clara de compra y mención de la velocidad de respuesta/envío.
+
+## Formato Ganador
+*   Uso de **Negritas** para resaltar conceptos clave.
+*   Listas con viñetas para que el texto sea "escaneable".
+*   Párrafos cortos (máximo 4 líneas).

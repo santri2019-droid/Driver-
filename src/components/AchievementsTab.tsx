@@ -1,19 +1,12 @@
 import { Award, Lock, Unlock, Trophy, CheckCircle, Search, TrendingUp, Sparkles, Star } from "lucide-react";
 import { Achievement, DriverLog, GoalsConfig } from "../types";
 
-interface AchievementsTabProps {
-  logs: DriverLog[];
-  goals: GoalsConfig;
-  achievements: Achievement[];
-  currencySymbol: string;
-}
+import { useAppStore } from "../store/useAppStore";
+import { INITIAL_ACHIEVEMENTS } from "../data";
 
-export default function AchievementsTab({
-  logs,
-  goals,
-  achievements,
-  currencySymbol,
-}: AchievementsTabProps) {
+export default function AchievementsTab() {
+  const { logs, goals, currencySymbol } = useAppStore();
+  const achievements = INITIAL_ACHIEVEMENTS;
   // Compute real-time values to inject into achievement progression
   const totalLogsCount = logs.length;
   

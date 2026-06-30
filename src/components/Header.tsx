@@ -1,31 +1,21 @@
 import { useState } from "react";
 import { Bell, User, Car, Settings, X, ShieldAlert, BadgeInfo } from "lucide-react";
 
-interface HeaderProps {
-  driverName: string;
-  setDriverName: (name: string) => void;
-  carModel: string;
-  setCarModel: (model: string) => void;
-  avatarUrl: string;
-  setAvatarUrl: (url: string) => void;
-  unreadNotifications: number;
-  setUnreadNotifications: (count: number) => void;
-  currencySymbol: string;
-  setCurrencySymbol: (sym: string) => void;
-}
+import { useAppStore } from "../store/useAppStore";
 
-export default function Header({
-  driverName,
-  setDriverName,
-  carModel,
-  setCarModel,
-  avatarUrl,
-  setAvatarUrl,
-  unreadNotifications,
-  setUnreadNotifications,
-  currencySymbol,
-  setCurrencySymbol,
-}: HeaderProps) {
+export default function Header() {
+  const {
+    driverName,
+    setDriverName,
+    carModel,
+    setCarModel,
+    avatarUrl,
+    setAvatarUrl,
+    unreadNotifications,
+    setUnreadNotifications,
+    currencySymbol,
+    setCurrencySymbol,
+  } = useAppStore();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 

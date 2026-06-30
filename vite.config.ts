@@ -5,8 +5,12 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/Driver-/',
+    root: path.resolve(__dirname),
+    base: process.env.VITE_BASE_PATH || '/',
     plugins: [react(), tailwindcss()],
+    optimizeDeps: {
+      exclude: ['zustand', 'zustand/middleware'],
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
